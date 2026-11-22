@@ -1,0 +1,185 @@
+/*
+Theme Name: echofy child
+Tags:  custom-menu, editor-style, featured-images
+Template: echofy
+Version: 1.0.0
+*/
+
+
+@import '../echofy/style.css';
+
+
+
+/*---------------------------------
+      write your css from here
+------------------------------------*/
+
+.aboutsec p.description {
+    text-align: justify !important;
+}
+
+.logo {
+    filter: brightness(0) invert(1);
+}
+
+.service_thumb img {
+    border-radius: 10px;
+}
+
+.implementing-logo img.swiper-slide-image {
+    height: 80px !important;
+}
+
+.icon-box-content h2 {
+    color: #FFF !IMPORTANT;
+}
+.icon-box:hover .icon-box-content h2 {
+    color: #000 !IMPORTANT;
+}
+.mean-container .mean-bar::before {
+    color: #fff;
+    content: "echofy";
+    font-size: 0;
+    font-weight: 700;
+    left: 10px;
+    position: absolute;
+    top: 18px;
+}
+
+.fa, .fas {
+    font-family: "fontAwesome" !important;
+    font-weight: 900;
+}
+
+.service-box.style2 h3.title a {
+    display: inline-block;
+    color: #001819;
+    font-size: 20px;
+    font-weight: 600;
+    transition: 0.5s;
+    position: relative;
+    z-index: 2;
+}
+
+.service-box.style2 .content {
+    background: #fff;
+    padding: 15px 15px 15px 15px; 
+    width: 88%;
+    border-left: 5px solid #79B900;
+    position: relative;
+    margin-top: -48px;
+    transition: 0.5s;
+    border-radius: 3px;
+    height: 80px !important;
+    overflow: hidden;
+}
+
+.service-box.style2:hover .content {
+    background: #286B4E;
+    height: 110px !important;
+    margin-top: -90px;
+}
+
+.trustdetails tr th {
+    background-color: #286B4E;
+    color: #fff;
+}
+
+.trustdetails tr td {
+    vertical-align: middle;
+}
+
+.section-title.style1 h3.title {
+    font-size: 36px !important;
+    font-weight: 700;
+    margin: 0 0 0;
+}
+
+.project_section h3.heading-text {color: #286B4E;}
+
+.project_section h6 { color: #3aa36e; margin-bottom: 15px;}
+
+.project_section .heading.style1 h6:before {
+    position: absolute;
+    content: "";
+    width: 22px;
+    height: 2px;
+    left: 0;
+    top: 11px;
+    background: #286B4E;
+}
+
+
+@media (min-width: 320px) and (max-width: 575px) {
+    .marquee-block h3 img {
+        -webkit-animation: rotatemetwo 18s linear infinite;
+        animation: rotatemetwo 18s linear infinite;
+        width: 60px !important;
+    }
+	
+	.marquee-block h3 {
+    display: inline-block;
+    font-size: 15px;
+    color: #fff;
+    font-weight: 600;
+    margin: 0;
+}
+	.section-title.style1 h3.title {
+    font-size: 20px !important;
+    font-weight: 700;
+    margin: 0 0 0;
+}
+	
+	.icon-box.style11 .icon-box-content h2 {
+    font-size: 20px;
+    color: #001819;
+    font-weight: 600;
+    font-family: "Albert Sans";
+    margin: 0;
+    padding: 0 0 12px 0;
+}
+	.section-title.style1 .subtitle {
+    font-size: 14px;
+    text-transform: capitalize;
+    font-weight: 500;
+    color: #79B900;
+    margin: 0 0 23px;
+    position: relative;
+    padding-left: 0;
+    display: inline-block;
+}
+	.service_item.style_one h2.title {
+    font-size: 20px !important;
+    font-weight: 600;
+    margin: 15px 0 26px;
+    position: relative;
+    transition: all 400ms linear;
+}
+.heading .heading-text {
+    color: #FFFFFF;
+    font-size: 20px !important;
+    font-weight: 600;
+    margin: 0px 0px 10px 0px;
+}
+	    .breadcumb-area {
+        padding: 30px 0 30px !important;
+    }
+	
+	.elementor-element-55097c7 .heading .heading-text {
+    color: #FFFFFF;
+    font-size: 14px !important;
+    font-weight: 600;
+    margin: 0px 0px 10px 0px;
+}
+	.service_item.style_one h2.title a {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 15px 0 26px;
+    position: relative;
+    color: #001819;
+    transition: all 400ms linear;
+}
+	.brpt h2 {
+        font-size: 25px !important;
+    }
+}

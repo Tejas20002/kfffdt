@@ -212,6 +212,39 @@ canvas.rain{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-e
 .btn.ghost{background:transparent;border:2px solid var(--green);color:var(--green)}.btn.ghost:hover{background:var(--green);color:#fff}
 @media(prefers-reduced-motion:reduce){.dots i.sea{opacity:.15}.dots i.keep{background:var(--green2)}.yr i.r{background:#2f86c0}}
 @media(max-width:900px){.bigs{gap:22px}.bigs b{font-size:2.2rem}}
+/* --- home: fodder, fruit & forest --- */
+.fff .opt button{display:inline-flex;align-items:center;gap:8px}.fff .opt svg{width:18px;height:18px}
+.fff .view{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.scene{border-radius:28px;overflow:hidden;border:1px solid var(--line);background:#fbf7ec;box-shadow:0 34px 60px -40px rgba(30,50,30,.55)}
+.sc{display:block;width:100%;height:auto}
+.sc .bl{transform-box:fill-box;transform-origin:50% 100%;animation:fsway 2.8s ease-in-out var(--s) infinite alternate}
+.sc .gr,.sc .gw,.sc .pp,.sc .cn{transform-box:fill-box;transform-origin:50% 100%}.sc .fp,.sc .sun{transform-box:fill-box;transform-origin:50% 50%}
+.sc .sun{animation:fglow 4s ease-in-out infinite alternate}.sc .cl{animation:fdrift 18s ease-in-out infinite alternate}
+.sc .bd path{fill:none;stroke:#2e5b3b;stroke-width:2;stroke-linecap:round}
+.armed .sc .gr{transform:scaleY(0)}.armed .sc .gw,.armed .sc .pp,.armed .sc .fp{transform:scale(0)}.armed .sc .cn{transform:scale(.25)}.armed .sc .sd,.armed .sc .fd,.armed .sc .bd{opacity:0}
+.fff .play .gr{animation:fgrow .9s cubic-bezier(.2,.8,.2,1.2) var(--d) both}
+.fff .play .gw,.fff .play .pp,.fff .play .fp{animation:fpop .7s cubic-bezier(.2,.8,.2,1.3) var(--d) both}
+.fff .play .cn{animation:fcan 1.2s cubic-bezier(.2,.8,.2,1.1) .2s both}
+.fff .play .sd{animation:fseed 1s ease-in var(--d) both}.fff .play .fd{animation:ffall .9s cubic-bezier(.5,0,.9,.5) 3.3s both}
+.fff .play .bd{opacity:1;animation:ffly 15s linear 2.6s infinite both}
+.sc .gnd{transition:fill 2.6s .5s}.fff:not(.armed) .gnd,.fff .play .gnd{fill:var(--g)}
+@keyframes fgrow{0%{transform:scaleY(0)}70%{transform:scaleY(1.1)}100%{transform:scaleY(1)}}
+@keyframes fpop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes fcan{from{transform:scale(.25)}to{transform:scale(1)}}
+@keyframes fsway{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+@keyframes fglow{to{transform:scale(1.12)}}@keyframes fdrift{to{transform:translateX(46px)}}
+@keyframes fseed{0%{transform:translateY(-170px);opacity:0}12%{opacity:1}80%{transform:none;opacity:1}100%{transform:none;opacity:0}}
+@keyframes ffall{0%{transform:none;opacity:0}8%{opacity:1}100%{transform:translate(68px,74px);opacity:1}}
+@keyframes ffly{from{transform:translateX(-60px)}to{transform:translateX(470px)}}
+.finfo .ftag{font-weight:700;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre)}
+.finfo h3{font:700 2.1rem/1.15 Fraunces,serif;margin:.25em 0 .45em;color:var(--ink)}.finfo p{color:var(--muted);margin:0}
+.fbig{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:20px 0 4px}.fbig b{font:700 3.3rem/1 Fraunces,serif;color:var(--green)}.fbig span{font-weight:600;color:var(--muted)}
+.fmini{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0 24px}
+.fmini div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;transition:transform .3s,border-color .3s}.fmini div:hover{transform:translateY(-4px);border-color:var(--ochre)}
+.fmini b{display:block;font:700 1.55rem/1.1 Fraunces,serif;color:var(--ochre)}.fmini b.t{font-size:1.2rem;line-height:1.3}.fmini span{display:block;font-size:.84rem;line-height:1.35;color:var(--muted);margin-top:4px}
+.fact{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+@media(max-width:900px){.fff .view{grid-template-columns:1fr;gap:26px}.finfo h3{font-size:1.7rem}.fbig b{font-size:2.6rem}}
+@media(max-width:520px){.fmini{grid-template-columns:1fr 1fr}.fmini div:last-child{grid-column:1/-1}}
 /* --- contact page: photo + floating form --- */
 .cx{position:relative;min-height:calc(100vh - 67px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 20px 110px;overflow:hidden;color:#fff}
 .cx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:kb 30s ease-in-out infinite alternate}
@@ -429,9 +462,16 @@ const m=location.hash.match(/^#s([1-5])$/);go(m?+m[1]-1:0);play()})();
 (()=>{const rb=document.getElementById('rb');if(!rb)return;const d=rb.querySelector('.dots'),y=rb.querySelector('.yr');
 const rp=el=>{el.classList.remove('play');void el.offsetWidth;el.classList.add('play')};
 const cur=()=>rb.querySelector('.view.on');const run=()=>{rp(cur().id==='v1'?d:y);cur().querySelectorAll('[data-count]').forEach(countUp)};
-document.querySelectorAll('.opt button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.opt button').forEach(x=>x.classList.toggle('on',x===b));rb.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===b.dataset.v));run()});
+const ob=rb.closest('section').querySelectorAll('.opt button');ob.forEach(b=>b.onclick=()=>{ob.forEach(x=>x.classList.toggle('on',x===b));rb.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===b.dataset.v));run()});
 rb.querySelectorAll('.replay').forEach(b=>b.onclick=run);
 const o=new IntersectionObserver(([e])=>{if(e.isIntersecting){o.disconnect();run()}},{threshold:.3});o.observe(rb)})();
+/* fodder, fruit & forest: tabs, replay, play when in view */
+(()=>{const s=document.getElementById('fff');if(!s)return;if(!matchMedia('(prefers-reduced-motion:reduce)').matches)s.classList.add('armed');
+const bt=s.querySelectorAll('.opt button'),vs=s.querySelectorAll('.view'),cur=()=>s.querySelector('.view.on');
+const run=()=>{const v=cur();v.classList.remove('play');void v.offsetWidth;v.classList.add('play');v.querySelectorAll('[data-count]').forEach(countUp)};
+bt.forEach(b=>b.onclick=()=>{bt.forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-selected',x===b)});vs.forEach(v=>v.classList.toggle('on',v.id===b.dataset.v));run()});
+s.querySelectorAll('.replay').forEach(b=>b.onclick=run);
+const o=new IntersectionObserver(([e])=>{if(e.isIntersecting){o.disconnect();run()}},{threshold:.3});o.observe(s.querySelector('.views'))})();
 /* water-drop cursor: dot + trailing ring, droplet trail, ripple on click */
 (()=>{if(!matchMedia('(hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
 const mk=c=>{const d=document.createElement('div');d.className=c;document.body.appendChild(d);return d};
@@ -874,6 +914,142 @@ def update_page(i):
     return hero_page(u["title"], u["summary"], hero_img) + (f'<section><div class="wrap" style="max-width:820px">{meta}<div class="ubody">{body}</div>{clip}{btn}'
             f'<p style="margin-top:34px"><a class="more" href="updates.html">← All updates</a></p>{nav}</div></section>')
 
+# ---- Rain section: lives on the Water Conservation page (was on home) ----
+RAIN_SECTION = f"""<section class="alt-bg"><div class="wrap"><div class="sub-h reveal"><div class="kick">The problem we solve</div><h2>Where does Kutch's rain go?</h2><p>Just 312 mm falls in about 13 rainy days a year – and about 70% of it runs off to the sea.</p></div>
+<div class="opt reveal"><button class="on" data-v="v1">Where the rain goes</button><button data-v="v2">When it rains</button></div>
+<div class="rain-box reveal" id="rb"><div class="views">
+<div class="view on" id="v1"><div class="dots">{DOTS}</div>
+<div class="bigs"><div><b data-count="70" data-suffix="%">0</b><span>runs off to the sea</span></div><div class="g"><b data-count="30" data-suffix="%">0</b><span>stays on the land – what tanks &amp; check dams hold</span></div></div>
+<div class="legend"><span><b style="background:#5fa8d3"></b>every drop = 1% of the rain</span><button class="replay" type="button">↻ Replay</button></div></div>
+<div class="view" id="v2"><div class="yr">{YR}</div>
+<div class="bigs"><div class="g"><b data-count="13">0</b><span>rainy days in a typical year</span></div><div><b data-count="352">0</b><span>days with no rain at all</span></div></div>
+<div class="legend"><span><b style="background:#2f86c0"></b>rainy day (monsoon; dates illustrative)</span><span><b style="background:#d9cdb0"></b>dry day · one row per month</span><button class="replay" type="button">↻ Replay</button></div></div>
+</div>
+<div class="tankcol">{TANK}<div class="tbig">+<b data-count="8835">0</b> <small>lac litres</small></div><p style="margin:.2em 0 .6em"><b style="color:var(--green)"><span data-count="332">0</span> village tanks</b> revived since 2012</p>
+<p style="color:var(--muted);font-size:.95rem">Every Jal Mandir gets a name plate with the donor's name.</p>
+<a class="btn" href="contact.html">Fund a Jal Mandir tank</a> &nbsp; <a class="btn ghost" href="p-kutch-jal-mandir-abhiyan.html">See the project</a></div></div></div></section>"""
+
+
+# ---- Home: Fodder, Fruit & Forest – what the Trust's name stands for ----
+# Figures come from the Agriculture & fodder rows of ACT and the agriculture program page.
+def _sky(gid, cloud_x):
+    return (f'<defs><linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4ecd6"/><stop offset="1" stop-color="#fbf7ec"/></linearGradient></defs>'
+            f'<rect width="400" height="300" fill="url(#{gid})"/><circle class="sun" cx="334" cy="58" r="24" fill="#f2c46b"/>'
+            f'<g transform="translate({cloud_x} 52)" opacity=".9"><g class="cl"><ellipse rx="28" ry="9" fill="#fff"/><ellipse cx="12" cy="-7" rx="15" ry="10" fill="#fff"/></g></g>')
+
+
+def _fodder():
+    import random
+    R = random.Random(7)
+    rows = [(170, .5, 15, "#a3c78b"), (194, .65, 13, "#86b571"), (220, .8, 12, "#66a05e"), (248, .95, 10, "#4f8f55"), (282, 1.12, 9, "#3f7a4f")]
+    g = []
+    for r, (y, sc, n, col) in enumerate(rows):
+        step = 400 / n
+        for c in range(n):
+            x = step * (c + .5) + R.uniform(-step * .25, step * .25)
+            g.append('<g transform="translate(%.0f %.0f) scale(%s)"><g class="gr" style="--d:%.2fs"><path class="bl" style="--s:%.2fs;fill:%s" d="M-2 0Q-6-12-13-22Q-5-15 1 0ZM-2.4 0Q-2-20 0-36Q2-20 2.4 0ZM-1 0Q5-13 13-20Q4-10 2.5 0ZM-3 0Q-9-8-15-11Q-7-6-1 0Z"/></g></g>'
+                     % (x, y + R.uniform(-3, 3), sc, .25 + r * .22 + c * .045, R.uniform(0, 2), col))
+    bales = "".join('<g transform="translate(%d %d)"><g class="pp" style="--d:%.1fs"><rect x="-27" y="-24" width="54" height="26" rx="9" fill="#e4b65c" stroke="#b8862f" stroke-width="2"/><path d="M-14-24v26M0-24v26M14-24v26" stroke="#c4913a" stroke-width="1.6"/></g></g>' % b
+                    for b in [(320, 288, 2.5), (368, 292, 2.7), (344, 268, 2.9)])
+    return ('<svg class="sc" viewBox="0 0 400 300" role="img" aria-label="Grass growing row by row across a field, with fodder bales">' + _sky("skF", 80)
+            + '<path class="gnd" d="M0 162Q90 142 200 154T400 150V300H0Z" fill="#e2cf9f" style="--g:#bcd597"/>' + "".join(g) + bales + "</svg>")
+
+
+FRUITS = [(-60, -110), (-35, -142), (-10, -104), (15, -150), (40, -120), (62, -98), (-48, -172), (5, -182), (38, -176), (-20, -128), (25, -94), (-72, -88), (72, -132), (-4, -160), (52, -150), (-38, -96)]
+
+
+def _fruit():
+    orchard = "".join('<g transform="translate(%d %d) scale(%s)"><g class="gw" style="--d:%.2fs"><rect x="-2.5" y="-16" width="5" height="17" rx="2" fill="#8a6440"/><circle cy="-25" r="13" fill="#7fab69"/><circle cx="7" cy="-21" r="9" fill="#70a05e"/></g></g>' % t
+                      for t in [(30, 160, .8, .2), (78, 154, .7, .3), (118, 158, .6, .45), (276, 156, .6, .4), (322, 152, .75, .35), (366, 158, .85, .25)])
+    fruits = "".join('<g transform="translate(%d %d)"><g class="fp" style="--d:%.2fs"><circle r="8" fill="#e98b2a"/><circle cx="-2.6" cy="-2.6" r="2.4" fill="#f8c37f"/><path d="M0-8q4-5 9-4q-3 5-9 4" fill="#6fae5a"/></g></g>' % (x, y, .9 + k * .12)
+                     for k, (x, y) in enumerate(FRUITS))
+    tree = ('<g transform="translate(170 272)"><path d="M-12 0Q-7-46-5-92L5-92Q8-46 14 0Z" fill="#7a5634"/><path d="M-3-60Q-26-80-40-96M3-70Q24-88 40-100" stroke="#7a5634" stroke-width="7" stroke-linecap="round" fill="none"/>'
+            '<g class="cn"><circle cy="-130" r="62" fill="#3f7a4f"/><circle cx="-54" cy="-104" r="42" fill="#4a8756"/><circle cx="54" cy="-106" r="44" fill="#4a8756"/><circle cx="-28" cy="-166" r="38" fill="#4f8d5b"/><circle cx="30" cy="-164" r="40" fill="#4f8d5b"/></g>'
+            + fruits + "</g>")
+    basket = ('<g transform="translate(300 274)">' + "".join('<g transform="translate(%d %d)"><g class="fp" style="--d:%.1fs"><circle r="8" fill="#e98b2a"/><circle cx="-2.6" cy="-2.6" r="2.4" fill="#f8c37f"/></g></g>' % f for f in [(-12, -24, 4.1), (12, -24, 4.3), (0, -28, 4.5)])
+              + '<path d="M-30-22H30L22 4H-22Z" fill="#c4904f" stroke="#9c6b33" stroke-width="2" stroke-linejoin="round"/><path d="M-27-12H27M-25-2H25" stroke="#9c6b33" stroke-width="1.5"/></g>')
+    drop = '<g transform="translate(232 174)"><g class="fd"><circle r="8" fill="#e98b2a"/><circle cx="-2.6" cy="-2.6" r="2.4" fill="#f8c37f"/></g></g>'
+    return ('<svg class="sc" viewBox="0 0 400 300" role="img" aria-label="Fruit appearing on a tree, one dropping into a basket">' + _sky("skR", 250)
+            + '<path class="gnd" d="M0 168Q120 148 220 162T400 158V300H0Z" fill="#e2cf9f" style="--g:#bcd597"/>' + orchard + tree + drop + basket + "</svg>")
+
+
+def _tree(x, y, sc, d, tall, back):
+    c1, c2 = ("#8ab474", "#7aa865") if back else ("#3f7a4f", "#4f8d5b")
+    if tall:
+        shape = f'<rect x="-3.5" y="-46" width="7" height="48" rx="3" fill="#7a5634"/><ellipse cy="-78" rx="20" ry="40" fill="{c1}"/><ellipse cx="-6" cy="-68" rx="11" ry="25" fill="{c2}"/>'
+    else:
+        shape = f'<rect x="-4" y="-38" width="8" height="40" rx="3" fill="#7a5634"/><circle cy="-60" r="30" fill="{c1}"/><circle cx="-22" cy="-45" r="20" fill="{c2}"/><circle cx="22" cy="-47" r="21" fill="{c2}"/>'
+    return f'<g transform="translate({x} {y}) scale({sc})"><g class="gw" style="--d:{d:.2f}s">{shape}</g></g>'
+
+
+def _forest():
+    back = [(40, 168, .55, 0), (118, 160, .62, 1), (205, 166, .5, 0), (292, 158, .6, 1), (372, 166, .55, 0)]
+    front = [(78, 264, 1, 0), (170, 274, 1.15, 1), (262, 266, .95, 0), (348, 272, 1.05, 1)]
+    trees = "".join(_tree(x, y, sc, .3 + k * .14, tall, True) for k, (x, y, sc, tall) in enumerate(back))
+    seeds = trees_f = ""
+    for k, (x, y, sc, tall) in enumerate(front):
+        d = .9 + k * .28
+        seeds += f'<circle class="sd" cx="{x}" cy="{y - 4}" r="4.5" fill="#8a6a45" style="--d:{d - .8:.2f}s"/>'
+        trees_f += _tree(x, y, sc, d, tall, False)
+    birds = '<g transform="translate(0 92)"><g class="bd"><path d="M0 0q6-7 12 0q6-7 12 0"/><path d="M30-12q5-6 10 0q5-6 10 0"/></g></g>'
+    return ('<svg class="sc" viewBox="0 0 400 300" role="img" aria-label="Seed balls falling and trees growing across dry land">' + _sky("skT", 120)
+            + '<path class="gnd" d="M0 172Q100 148 210 164T400 156V300H0Z" fill="#e6d6ab" style="--g:#c6dba3"/>' + trees
+            + '<path class="gnd" d="M0 236Q120 214 240 232T400 226V300H0Z" fill="#dcc794" style="--g:#a9c987"/>' + seeds + trees_f + birds + "</svg>")
+
+
+FFF_ICON = {
+    "fodder": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 21V9M12 21c-1-5-4-8-8-9M12 21c1-5 4-8 8-9M12 13c-1-3-3-5-5-6M12 13c1-3 3-5 5-6"/></svg>',
+    "fruit": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M12 7c0-2 1-4 3-4M12 7c-2-2-5-2-6 0"/></svg>',
+    "forest": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22v-6M6 16h12l-6-7zM8 11h8l-4-7z"/></svg>',
+}
+FFF_TABS = [
+    dict(key="fodder", label="Fodder", scene=_fodder, tag="Fodder security", h="Green fodder for the dry months",
+         p="Livestock needs fodder all year, even when the rain fails. We give fodder seeds to rainfed farmers and Napier (NB21) green-fodder cuttings to irrigated farmers, develop village grazing land (gauchar) and help families build fodder storage sheds.",
+         big=("1421800", 0, "green-fodder cuttings given to farmers"),
+         mini=[("1090", "farmers in the fodder security project"), ("170", "acres of grazing land developed"), ("278", "farmers with fodder storage sheds")],
+         links=[("p-agriculture-development.html", "See agriculture &amp; fodder")]),
+    dict(key="fruit", label="Fruit", scene=_fruit, tag="Horticulture", h="Fruit trees on dry farms",
+         p="Fruit plants give rainfed farms a crop that lasts for years. Alongside saplings, farmers get soil and water testing at our Krishi Seva Kendra and chemical-free farming support from the Bio Resource Centre.",
+         big=("21725", 0, "fruit plants promoted with farmers"),
+         mini=[("1870", "farmers supported by the Bio Resource Centre"), ("1400", "farmers in agriculture extension"), ("1", "Krishi Seva Kendra with a soil &amp; water lab")],
+         links=[("p-agriculture-development.html", "See agriculture")]),
+    dict(key="forest", label="Forest", scene=_forest, tag="Tree plantation", h="Bringing the trees back",
+         p="The Trust began in 1989 because trees were disappearing from Kutch, and rainfall and harvests suffered with them. Today we plant trees with villages and with the Indian Army in Bhuj, and broadcast seed balls on open land.",
+         big=("8", 0, "tree-plantation projects"),
+         mini=[("26.25", "Rs. lacs invested in plantation", 2), ("=1989", "the year we began, to bring the green back"), ("=Seed balls", "broadcast on open grazing land")],
+         links=[("about.html", "Why we began"), ("p-agriculture-development.html", "See tree plantation")]),
+]
+
+
+def fff_section():
+    btns = views = ""
+    for i, t in enumerate(FFF_TABS):
+        on = i == 0
+        btns += '<button type="button" role="tab" id="ft-%s" aria-controls="f-%s" aria-selected="%s" data-v="f-%s"%s>%s%s</button>' % (
+            t["key"], t["key"], "true" if on else "false", t["key"], ' class="on"' if on else "", FFF_ICON[t["key"]], t["label"])
+        minis = ""
+        for m in t["mini"]:
+            val, label = m[0], m[1]
+            if val.startswith("="):
+                minis += '<div><b class="%s">%s</b><span>%s</span></div>' % ("t" if not val[1:].isdigit() else "", val[1:], label)
+            else:
+                minis += '<div><b data-count="%s"%s>0</b><span>%s</span></div>' % (val, ' data-dec="%d"' % m[2] if len(m) > 2 else "", label)
+        links = "".join('<a class="btn%s" href="%s">%s</a>' % ("" if k == 0 else " ghost", h, l) for k, (h, l) in enumerate(t["links"]))
+        n, dec, blabel = t["big"]
+        views += ('<div class="view%s" id="f-%s" role="tabpanel" aria-labelledby="ft-%s"><div class="scene">%s</div>'
+                  '<div class="finfo"><div class="ftag">%s</div><h3>%s</h3><p>%s</p>'
+                  '<div class="fbig"><b data-count="%s"%s>0</b><span>%s</span></div><div class="fmini">%s</div>'
+                  '<div class="fact">%s<button class="replay" type="button">↻ Replay</button></div></div></div>') % (
+            " on" if on else "", t["key"], t["key"], t["scene"](), t["tag"], t["h"], t["p"], n, ' data-dec="%d"' % dec if dec else "", blabel, minis, links)
+    return ('<section class="alt-bg fff" id="fff"><div class="wrap"><div class="sub-h reveal"><div class="kick">What our name stands for</div><h2>Fodder, Fruit &amp; Forest</h2>'
+            "<p>Three words in our name, three kinds of work that keep Kutch's villages, livestock and land green.</p></div>"
+            '<div class="opt reveal" role="tablist" aria-label="Fodder, fruit and forest">' + btns + "</div>"
+            '<div class="views reveal">' + views + "</div></div></section>")
+
+
+FFF = fff_section()
+
+
 def hero_page(title, sub, img=None):
     im = f'<img src="img/{img}.jpg" alt="">' if img else ""
     return f'<div class="page-hero{" img" if img else ""}">{im}<div class="wrap"><div class="kick" style="color:#f0c46f">KFFFDT</div><h1>{E(title)}</h1><p>{E(sub)}</p></div>{WAVE("#f7f1e3")}</div>'
@@ -902,19 +1078,7 @@ def build():
 <div class="mv"><div><h3>Our mission</h3>Self-reliant rural communities able to undertake the overall management of natural resources.</div><div><h3>Our vision</h3>Community-centric sustainable development, easily managed by the community for their well-being.</div></div>
 <p style="margin-top:22px"><a class="btn" href="about.html">Read our story</a></p></div><a href="about.html" class="reveal"><img src="img/g16.jpg" alt="Community meeting at Krishi Seva Kendra"></a></div></section>
 {BANNER}
-<section class="alt-bg"><div class="wrap"><div class="sub-h reveal"><div class="kick">The problem we solve</div><h2>Where does Kutch's rain go?</h2><p>Just 312 mm falls in about 13 rainy days a year – and about 70% of it runs off to the sea.</p></div>
-<div class="opt reveal"><button class="on" data-v="v1">Where the rain goes</button><button data-v="v2">When it rains</button></div>
-<div class="rain-box reveal" id="rb"><div class="views">
-<div class="view on" id="v1"><div class="dots">{DOTS}</div>
-<div class="bigs"><div><b data-count="70" data-suffix="%">0</b><span>runs off to the sea</span></div><div class="g"><b data-count="30" data-suffix="%">0</b><span>stays on the land – what tanks &amp; check dams hold</span></div></div>
-<div class="legend"><span><b style="background:#5fa8d3"></b>every drop = 1% of the rain</span><button class="replay" type="button">↻ Replay</button></div></div>
-<div class="view" id="v2"><div class="yr">{YR}</div>
-<div class="bigs"><div class="g"><b data-count="13">0</b><span>rainy days in a typical year</span></div><div><b data-count="352">0</b><span>days with no rain at all</span></div></div>
-<div class="legend"><span><b style="background:#2f86c0"></b>rainy day (monsoon; dates illustrative)</span><span><b style="background:#d9cdb0"></b>dry day · one row per month</span><button class="replay" type="button">↻ Replay</button></div></div>
-</div>
-<div class="tankcol">{TANK}<div class="tbig">+<b data-count="8835">0</b> <small>lac litres</small></div><p style="margin:.2em 0 .6em"><b style="color:var(--green)"><span data-count="332">0</span> village tanks</b> revived since 2012</p>
-<p style="color:var(--muted);font-size:.95rem">Every Jal Mandir gets a name plate with the donor's name.</p>
-<a class="btn" href="contact.html">Fund a Jal Mandir tank</a> &nbsp; <a class="btn ghost" href="p-kutch-jal-mandir-abhiyan.html">See the project</a></div></div></div></section>
+{FFF}
 <section><div class="wrap"><div class="sh reveal"><div><div class="kick">What we do</div><h2 style="margin:0">Our programs</h2></div><a class="more" href="projects.html">All programs →</a></div><div class="grid g3">{prog_cards(ORDER)}</div></div></section>
 <section class="alt-bg"><div class="wrap"><div class="sh reveal"><div><div class="kick">Results</div><h2 style="margin:0">Our impact, 1998 – 2024</h2></div><a class="more" href="activities.html">Full activity report →</a></div>
 <div class="grid g3"><a class="stat reveal" href="activities.html"><b data-count="1421.67" data-dec="2">0</b><span>Rs. lacs · water conservation · 705 structures</span><i class="go">View details →</i></a>
@@ -954,7 +1118,7 @@ def build():
         if p.get("note"): b += f'<p style="margin-top:20px;color:var(--muted)">{E(p["note"])}</p>'
         for t in ("table", "table2", "table3"):
             if p.get(t): b += table(*p[t], num_from=9 if t != "table" else 2)
-        body = hero_page(p["title"], p["intro"], p["img"]) + f'<section><div class="wrap" style="max-width:860px">{b or "<p>More details coming soon.</p>"}<p style="margin-top:30px"><a class="btn" href="projects.html">← All programs</a></p></div></section>'
+        body = hero_page(p["title"], p["intro"], p["img"]) + (RAIN_SECTION if k == "water-conservation" else "") + f'<section><div class="wrap" style="max-width:860px">{b or "<p>More details coming soon.</p>"}<p style="margin-top:30px"><a class="btn" href="projects.html">← All programs</a></p></div></section>'
         W(f"p-{k}.html", page(f"p-{k}.html", p["title"], body, p["intro"]))
 
     # ACTIVITIES

@@ -8,7 +8,7 @@ PHONE1, PHONE2, MAIL = "98258 58919", "91065 82919", "kfffdt@gmail.com"
 ADDR = "102, Kaushik Apartment, Bhanushali Nagar, Bhuj – Kutch, Gujarat 370001"
 
 NAV = [("index.html", "Home"), ("about.html", "About"), ("projects.html", "Programs"),
-       ("activities.html", "Impact"), ("gallery.html", "Gallery"), ("updates.html", "Updates"), ("legal.html", "Legal"), ("contact.html", "Contact")]
+       ("activities.html", "Impact"), ("gallery.html", "Gallery"), ("explore.html", "3D Explore"), ("updates.html", "Updates"), ("legal.html", "Legal"), ("contact.html", "Contact")]
 
 PROGRAMS = {
  "water-conservation": dict(title="Water Conservation", img="g04", tag="Rain is rare in Kutch. We make every drop count.",
@@ -245,6 +245,15 @@ canvas.rain{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-e
 .fact{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 @media(max-width:900px){.fff .view{grid-template-columns:1fr;gap:26px}.finfo h3{font-size:1.7rem}.fbig b{font-size:2.6rem}}
 @media(max-width:520px){.fmini{grid-template-columns:1fr 1fr}.fmini div:last-child{grid-column:1/-1}}
+/* --- 3D explore: nav item + home teaser --- */
+nav a[href="explore.html"]{box-shadow:inset 0 0 0 1.5px var(--ochre)}
+@media(min-width:901px) and (max-width:1120px){nav a{padding:8px 9px;font-size:.9rem}.bar img{height:40px}}
+.xteaser{background:radial-gradient(120% 140% at 85% 15%,#3f7a4f 0%,#1f3d29 55%,#16241a 100%);color:#e9efe6;overflow:hidden}
+.xteaser .kick{color:#f0c46f}.xteaser h2{color:#fff}.xteaser p{color:#c9d4c9}.xteaser .split{align-items:center}
+.xt-img{display:block;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.25);box-shadow:0 40px 80px -40px rgba(0,0,0,.75);transform:perspective(1200px) rotateY(-9deg) rotateX(3deg);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.xt-img:hover{transform:perspective(1200px) rotateY(0) rotateX(0) translateY(-4px)}.xt-img img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.xt-tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 26px}.xt-tags span{padding:7px 13px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);font-size:.85rem}
+@media(prefers-reduced-motion:reduce){.xt-img{transform:none}}
 /* --- contact page: photo + floating form --- */
 .cx{position:relative;min-height:calc(100vh - 67px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 20px 110px;overflow:hidden;color:#fff}
 .cx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:kb 30s ease-in-out infinite alternate}
@@ -495,7 +504,7 @@ def footer_html():
     p1, p2 = PHONE1.replace(" ", ""), PHONE2.replace(" ", "")
     leaves = "".join('<span class="leaf-f" style="left:%d%%;animation-duration:%ds;animation-delay:%ds"></span>' % (x, d, dl) for x, d, dl in [(8, 10, 0), (30, 13, 3), (58, 11, 1), (84, 14, 5)])
     progs = "".join('<li><a href="p-%s.html">%s</a></li>' % (k, E(PROGRAMS[k]["title"])) for k in ORDER)
-    explore = "".join('<li><a href="%s">%s</a></li>' % (h, l) for h, l in [("index.html", "Home"), ("about.html", "About the Trust"), ("activities.html", "Our impact"), ("gallery.html", "Gallery"), ("updates.html", "Latest updates"), ("legal.html", "Legal details"), ("contact.html", "Contact")])
+    explore = "".join('<li><a href="%s">%s</a></li>' % (h, l) for h, l in [("index.html", "Home"), ("about.html", "About the Trust"), ("activities.html", "Our impact"), ("gallery.html", "Gallery"), ("explore.html", "Explore in 3D"), ("updates.html", "Latest updates"), ("legal.html", "Legal details"), ("contact.html", "Contact")])
     badges = "".join('<a href="legal.html">%s</a>' % b for b in ["80G", "12A", "CSR-1", "NGO Darpan"])
     return (f'<footer class="ft">{WAVE("#16241a")}<div class="wrap">'
             f'<div class="ft-cta reveal">{leaves}<div class="ft-rip" aria-hidden="true"><i></i><i></i><i></i></div>'
@@ -523,7 +532,7 @@ def footer_html():
 NOINDEX = True
 
 
-def page(fname, title, body, desc=""):
+def page(fname, title, body, desc="", bare=False):
     nav = "".join('<a href="%s"%s>%s</a>' % (h, ' class="on"' if h == fname or (fname.startswith("p-") and h == "projects.html") or (fname.startswith("u-") and h == "updates.html") else "", l) for h, l in NAV)
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">{'<meta name="robots" content="noindex, nofollow">' if NOINDEX else ''}
 <title>{E(title)} · KFFFDT</title><meta name="description" content="{E(desc or 'Kutch Fodder Fruit and Forest Development Trust – community-centric sustainable development in Kutch since 1989.')}">
@@ -531,7 +540,7 @@ def page(fname, title, body, desc=""):
 <style>{CSS}</style></head><body>
 <header><div class="bar"><a href="index.html"><img src="img/logo.png" alt="KFFFDT"></a><button class="burger" aria-label="Menu">☰</button><nav>{nav}</nav></div></header>
 {body}
-{footer_html()}
+{"" if bare else footer_html()}
 <div class="lb"><img alt=""></div><script>{JS}</script></body></html>"""
 
 WAVE = lambda fill: '<div class="wave"><svg viewBox="0 0 1440 70" preserveAspectRatio="none"><path fill="%s" d="M0 35c120 28 240 28 360 0s240-28 360 0 240 28 360 0 240-28 360 0v35H0z"/></svg><svg viewBox="0 0 1440 70" preserveAspectRatio="none"><path fill="%s" d="M0 30c120-26 240-26 360 0s240 26 360 0 240-26 360 0 240 26 360 0v40H0z"/></svg></div>' % (fill, fill)
@@ -1050,6 +1059,168 @@ def fff_section():
 FFF = fff_section()
 
 
+# ---- Explore Kutch in 3D (three.js scene in new/js/explore.js, vendored three.js r187 in new/vendor/three) ----
+# x/z place each program on the stylised landscape (x: west -> east, z: north -> south; salt Rann north, sea south).
+X3D_ICON = {
+    "jal": '<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>',
+    "water": '<path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
+    "drink": '<path d="M4 9h9a3 3 0 0 1 3 3v2M8 9V5h5M16 18v2M4 6v6"/>',
+    "fodder": '<path d="M12 21V9M12 21c-1-5-4-8-8-9M12 21c1-5 4-8 8-9M12 13c-1-3-3-5-5-6M12 13c1-3 3-5 5-6"/>',
+    "fruit": '<circle cx="12" cy="14" r="7"/><path d="M12 7c0-2 1-4 3-4M12 7c-2-2-5-2-6 0"/>',
+    "forest": '<path d="M12 22v-6M6 16h12l-6-7zM8 11h8l-4-7z"/>',
+    "animal": '<path d="M7 8h10l1 5a6 6 0 0 1-12 0zM4 6l3 2M20 6l-3 2M10 15h4"/>',
+    "rebuild": '<path d="M4 11l8-6 8 6v9H4zM10 20v-5h4v5"/>',
+    "school": '<path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/>',
+}
+X3D_SVG = lambda k: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>' % X3D_ICON[k]
+X3D = [
+    dict(id="jal", short="Jal Mandir", kick="Kutch Jal Mandir Abhiyan", title="Village tanks, revived together", x=42, z=0, color="#3b97cf",
+         stat=["332", "village tanks revived since 2012"],
+         text="Old village tanks are desilted with the community: the project pays for an excavator, villagers bring their tractors, and the silt goes back to strengthen bunds and fields.",
+         facts=[["8,835 lac L", "water storage added"], ["43%", "of the cost carried by villagers"]], link="p-kutch-jal-mandir-abhiyan.html", link_label="Open Jal Mandir"),
+    dict(id="water", short="Check dams", kick="Water conservation", title="Holding the rain where it falls", x=-40, z=12, color="#2f86c0",
+         stat=["705", "water structures built"],
+         text="Storage and percolation tanks, check dams, farm ponds and recharge wells keep rainwater in the village and push it back into the ground.",
+         facts=[["141", "storage tanks"], ["134", "farm ponds"]], link="p-water-conservation.html", link_label="Open water conservation"),
+    dict(id="drink", short="Drinking water", kick="Drinking water · WASMO", title="Water schemes run by the village", x=66, z=30, color="#4aa7bf",
+         stat=["37", "villages with community-run water schemes"],
+         text="Under WASMO, village committees build and manage their own drinking-water schemes, with roof-top rainwater harvesting at schools.",
+         facts=[["₹620.82 lac", "invested in village schemes"], ["9", "roof-top harvesting systems"]], link="p-decentralized-drinking-water-supply-scheme-project.html", link_label="Open drinking water"),
+    dict(id="fodder", short="Fodder", kick="Fodder security", title="Green fodder for village cattle", x=16, z=30, color="#5f9e4f",
+         stat=["14,21,800", "Napier (NB21) green-fodder cuttings"],
+         text="Fodder seeds for rainfed farmers, Napier cuttings for irrigated farms, grazing land for the village herd and sheds to store dry fodder.",
+         facts=[["1,090", "farmers in the fodder project"], ["170 acres", "grazing land developed"]], link="p-agriculture-development.html", link_label="Open agriculture"),
+    dict(id="fruit", short="Fruit & seeds", kick="Agriculture development", title="Orchards, seeds and healthy soil", x=-52, z=32, color="#e08326",
+         stat=["21,725", "fruit plants promoted"],
+         text="Anmol Beej Bank – Gujarat's largest traditional seed bank – keeps local seeds alive, and the Bio Resource Centre helps farmers move to chemical-free farming.",
+         facts=[["1,870", "farmers at the Bio Resource Centre"], ["26", "villages on the Beej Rath route"]], link="p-agriculture-development.html", link_label="Open agriculture"),
+    dict(id="forest", short="Forest", kick="Tree plantation", title="Bringing the trees back", x=-8, z=-8, color="#3f7a4f",
+         stat=["8", "tree-plantation projects"],
+         text="The Trust began in 1989 because trees were disappearing from Kutch. We plant with villages and with the Indian Army in Bhuj, and broadcast seed balls on open land.",
+         facts=[["₹26.25 lac", "invested in plantation"], ["1989", "the year we began"]], link="about.html", link_label="Why we began"),
+    dict(id="animal", short="Animal health", kick="Animal health care", title="Healthy herds, healthy families", x=22, z=48, color="#a4492b",
+         stat=["45,000+", "animals vaccinated against brucellosis in Mundra since 2012"],
+         text="Pashupalak Mitra centres vaccinate female calves, test milk and blood for Brucella and run awareness camps with pastoral families.",
+         facts=[["11", "villages in Mundra, with Adani Foundation"], ["NDDB", "among our animal-health partners"]], link="p-animal-health-care.html", link_label="Open animal health"),
+    dict(id="rebuild", short="Rebuilding", kick="Disaster management", title="After the 2001 earthquake", x=74, z=-18, color="#c98a2b",
+         stat=["134", "permanent houses built"],
+         text="After the 2001 earthquake the Trust put up temporary shelters, then rebuilt a village with a school, community centre, drinking water, sanitation and solar street lights.",
+         facts=[["174", "temporary shelters"], ["24", "houses repaired and retrofitted"]], link="p-natural-disaster-management.html", link_label="Open disaster relief"),
+    dict(id="school", short="Van Shala", kick="Primary education", title="A school where there was none", x=-72, z=-30, color="#7d63b0",
+         stat=["Van Shala", "forest school at Kalara Wandh, Lakhpat"],
+         text="Reaching the unreached: our Van Shala – a forest school – brings primary education to children at Kalara Wandh in Lakhpat taluka, on Kutch's western edge.",
+         facts=[["Lakhpat", "taluka, western Kutch"], ["Primary", "education for the unreached"]], link="p-primary-education-for-unreached-community.html", link_label="Open education"),
+]
+for _d in X3D:
+    _d["icon"] = _d["id"]
+
+X3D_CSS = """
+.x3d{--hh:67px;position:relative;height:calc(100svh - var(--hh));min-height:520px;overflow:hidden;background:linear-gradient(#b9d6ea,#f3e4c4 70%);isolation:isolate}
+.x3d>canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;touch-action:none;outline:none}
+.xg{background:rgba(255,252,244,.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 22px 50px -22px rgba(25,45,30,.5)}
+.xtitle{position:absolute;left:22px;top:22px;z-index:6;max-width:330px;padding:16px 20px;border-radius:24px}
+.xtitle{transition:padding .4s}.xtitle.mini{padding:12px 18px}.xtitle.mini h1{font-size:1.35rem;margin:.1em 0 0}.xtitle.mini p{display:none}
+.xtitle .kick{margin:0}.xtitle h1{font:700 1.75rem/1.1 Fraunces,serif;margin:.15em 0 .35em;color:var(--ink)}.xtitle p{margin:0;font-size:.86rem;line-height:1.45;color:#4c584d}
+.xpins{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.xpin{position:absolute;left:0;top:0;pointer-events:auto;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:99px;border:1px solid rgba(255,255,255,.75);background:rgba(255,252,244,.74);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font:600 .8rem/1 Inter,sans-serif;color:var(--ink);white-space:nowrap;cursor:pointer;transform-origin:50% 100%;box-shadow:0 10px 24px -12px rgba(0,0,0,.45);transition:opacity .3s,background .3s,box-shadow .3s;will-change:transform}
+.xpin i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#fff;flex:none}.xpin svg{width:15px;height:15px}
+.xpin:after{content:"";position:absolute;left:50%;top:100%;width:2px;height:10px;margin-left:-1px;background:linear-gradient(rgba(255,255,255,.95),transparent)}
+.xpin:hover,.xpin.on{background:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 35%,transparent),0 14px 30px -12px rgba(0,0,0,.5)}
+.xpin.off{opacity:0;pointer-events:none}
+.xpanel{position:absolute;right:22px;top:22px;z-index:7;width:min(380px,calc(100% - 44px));perspective:1100px;opacity:0;transform:translateX(26px) scale(.97);pointer-events:none;transition:opacity .45s,transform .6s cubic-bezier(.2,.8,.2,1)}
+.xpanel.open{opacity:1;transform:none;pointer-events:auto}
+.xp-in{position:relative;overflow:hidden;border-radius:30px;padding:22px 24px 20px;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s ease-out}
+.xp-in:before{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(color-mix(in srgb,var(--c) 40%,transparent),transparent 70%);pointer-events:none}
+.xpanel.swap .xp-in>*{animation:xswap .55s cubic-bezier(.2,.8,.2,1) both}.xpanel.swap .xp-in>:nth-child(2){animation-delay:.05s}.xpanel.swap .xp-in>:nth-child(3){animation-delay:.1s}.xpanel.swap .xp-in>:nth-child(4){animation-delay:.15s}.xpanel.swap .xp-in>:nth-child(5){animation-delay:.2s}.xpanel.swap .xp-in>:nth-child(6){animation-delay:.25s}
+@keyframes xswap{from{opacity:0;transform:translateY(10px)}}
+.xp-top{position:relative;display:flex;align-items:center;gap:10px}
+.xp-kick{font-weight:700;font-size:.74rem;letter-spacing:.13em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 70%,#1d2a1f)}
+.xp-count{margin-left:auto;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.xp-x{width:32px;height:32px;border-radius:50%;border:0;background:rgba(0,0,0,.07);font-size:1.3rem;line-height:1;cursor:pointer;color:var(--ink)}.xp-x:hover{background:rgba(0,0,0,.13)}
+.xp-title{position:relative;font:700 1.65rem/1.15 Fraunces,serif;margin:10px 0 12px;color:var(--ink)}
+.xp-stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85)}
+.xp-stat b{font:700 2rem/1 Fraunces,serif;color:color-mix(in srgb,var(--c) 75%,#1d2a1f)}.xp-stat span{flex:1;min-width:140px;font-size:.86rem;color:#4c584d}
+.xp-text{font-size:.93rem;line-height:1.55;color:#3d4a3f;margin:14px 0}
+.xp-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}.xp-facts div{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.75)}
+.xp-facts b{display:block;font:700 1.1rem/1.2 Fraunces,serif;color:var(--ink)}.xp-facts span{display:block;font-size:.78rem;line-height:1.35;color:#5d6a5e}
+.xp-act{display:flex;gap:8px;align-items:center}
+.xp-go{flex:1;text-align:center;background:var(--green);color:#fff;font-weight:600;padding:11px 16px;border-radius:99px;font-size:.9rem}.xp-go:hover{background:#244a30}
+.xp-prev,.xp-next{border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.6);border-radius:99px;padding:10px 14px;font:600 .88rem Inter,sans-serif;cursor:pointer;color:var(--ink)}.xp-prev:hover,.xp-next:hover{background:#fff}
+.xdock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:7;display:flex;align-items:center;gap:4px;padding:7px;border-radius:26px;max-width:calc(100% - 24px)}
+.xd-places{display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none}.xd-places::-webkit-scrollbar{display:none}
+.xd-places button{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:76px;padding:8px 4px 7px;border:0;border-radius:18px;background:transparent;font:600 .7rem/1.15 Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
+.xd-places button i{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--c);color:#fff;box-shadow:0 6px 14px -6px var(--c);transition:transform .3s cubic-bezier(.2,.8,.2,1.4)}.xd-places svg{width:18px;height:18px}
+.xd-places button:hover{background:rgba(255,255,255,.55)}.xd-places button:hover i{transform:translateY(-3px) scale(1.06)}.xd-places button.on{background:#fff;box-shadow:0 6px 16px -10px rgba(0,0,0,.4)}
+.xd-sep{flex:none;width:1px;align-self:stretch;margin:8px 4px;background:rgba(29,42,31,.15)}
+.xd-season,.xd-tour,.xd-reset{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;border:0;border-radius:18px;background:rgba(255,255,255,.5);font:600 .82rem Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
+.xd-season:hover,.xd-tour:hover,.xd-reset:hover{background:#fff}.xd-tour svg,.xd-reset svg{width:16px;height:16px}
+.xd-season .sw{flex:none;width:40px;height:22px;border-radius:99px;background:#d9c79c;position:relative;transition:background .4s}.xd-season .sw i{position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .4s cubic-bezier(.2,.8,.2,1.3)}
+.xd-season[aria-pressed=true] .sw{background:#3b97cf}.xd-season[aria-pressed=true] .sw i{transform:translateX(18px)}.xd-season .lbl{min-width:6.4em;text-align:left}
+.xd-tour[aria-pressed=true]{background:var(--green);color:#fff}
+.xtoast{position:absolute;left:50%;top:22px;z-index:8;transform:translate(-50%,-14px);opacity:0;padding:10px 18px;border-radius:99px;font-weight:600;font-size:.88rem;color:var(--ink);pointer-events:none;transition:opacity .4s,transform .5s cubic-bezier(.2,.8,.2,1);max-width:min(560px,calc(100% - 40px));text-align:center}
+.xtoast.show{opacity:1;transform:translate(-50%,0)}
+.xload{position:absolute;inset:0;z-index:9;display:grid;place-content:center;justify-items:center;gap:14px;background:linear-gradient(#b9d6ea,#f3e4c4 70%);color:var(--green);font-weight:600;transition:opacity .9s,visibility 0s .9s}
+.x3d.ready .xload{opacity:0;visibility:hidden}.xl-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(46,91,59,.2);border-top-color:var(--green);animation:spin 1s linear infinite}
+.xfall{display:none}
+.x3d.nogl{height:auto;min-height:0;background:var(--sand2)}.x3d.nogl>:not(.xfall){display:none!important}
+.x3d.nogl .xfall{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:44px 20px 64px}
+.xf-head{grid-column:1/-1}.xf-head h1{font:700 2.2rem/1.1 Fraunces,serif;margin:.2em 0}.xf-head p{color:var(--muted)}
+.xf-card{display:block;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:18px;padding:18px 20px;color:var(--ink)}
+.xf-card h3{font:700 1.2rem/1.2 Fraunces,serif;margin:.3em 0}.xf-card p{font-size:.92rem;color:var(--muted);margin:.4em 0}.xf-card b{color:var(--green)}
+@media(max-width:760px){
+.xtitle{left:12px;top:12px;right:12px;max-width:none;padding:12px 16px;border-radius:20px}.xtitle h1{font-size:1.3rem;margin:.1em 0 0}.xtitle p{display:none}
+.xpanel{left:12px;right:12px;top:auto;bottom:100px;width:auto;transform:translateY(24px)}.xpanel.open{transform:none}
+.xp-in{padding:16px 18px;border-radius:24px;max-height:calc(100svh - var(--hh) - 210px);overflow:auto}
+.xp-title{font-size:1.3rem;margin:6px 0 8px}.xp-stat b{font-size:1.5rem}.xp-text{font-size:.86rem;margin:10px 0}.xp-facts{margin-bottom:12px}
+.xpin span{display:none}.xpin{padding:4px}.xpin.on span{display:inline}.xpin.on{padding-right:10px}
+.xdock{left:10px;right:10px;bottom:10px;transform:none;max-width:none}.xd-places{flex:1}
+.xd-places button{width:62px;font-size:.64rem}.xd-season .lbl,.xd-tour span{display:none}.xd-season,.xd-tour,.xd-reset{padding:0 10px}
+.xtoast{top:auto;bottom:100px}
+}
+@media(prefers-reduced-motion:reduce){.xpanel,.xp-in,.xtoast{transition:none}.xl-ring{animation:none}}
+"""
+
+
+def explore_body():
+    import json
+    places = "".join('<button type="button" style="--c:%s" aria-current="false"><i>%s</i><span>%s</span></button>' % (d["color"], X3D_SVG(d["icon"]), E(d["short"])) for d in X3D)
+    data = json.dumps([dict(d, svg=X3D_SVG(d["icon"])) for d in X3D], ensure_ascii=False).replace("</", "<\\/")
+    fall = "".join('<a class="xf-card" style="--c:%s" href="%s"><div class="kick">%s</div><h3>%s</h3><p><b>%s</b> %s</p><p>%s</p><span class="more">%s →</span></a>'
+                   % (d["color"], d["link"], E(d["kick"]), E(d["title"]), E(d["stat"][0]), E(d["stat"][1]), E(d["text"]), E(d["link_label"])) for d in X3D)
+    reset = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v5h5"/></svg>'
+    play = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>'
+    return ('<div class="x3d" id="x3d">'
+            '<div class="xpins" aria-hidden="true"></div>'
+            '<div class="xtitle xg"><div class="kick">Explore in 3D</div><h1>Kutch, up close</h1><p>Drag to look around, scroll or pinch to zoom, and tap a pin to visit a program. Switch to monsoon to watch the tanks fill.</p></div>'
+            '<div class="xtoast xg" role="status"></div>'
+            '<aside class="xpanel" aria-hidden="true" aria-label="Program details"><div class="xp-in xg">'
+            '<div class="xp-top"><span class="xp-kick"></span><span class="xp-count"></span><button class="xp-x" type="button" aria-label="Close">×</button></div>'
+            '<h2 class="xp-title"></h2><div class="xp-stat"><b></b><span></span></div><p class="xp-text"></p><div class="xp-facts"></div>'
+            '<div class="xp-act"><a class="xp-go" href="#"></a><button class="xp-prev" type="button" aria-label="Previous place">←</button><button class="xp-next" type="button">Next →</button></div>'
+            '</div></aside>'
+            '<div class="xdock xg" role="toolbar" aria-label="Places and view controls"><div class="xd-places">' + places + '</div><span class="xd-sep"></span>'
+            '<button class="xd-season" type="button" aria-pressed="false"><span class="sw"><i></i></span><span class="lbl">Dry season</span></button>'
+            '<button class="xd-tour" type="button" aria-pressed="false">' + play + '<span>Tour</span></button>'
+            '<button class="xd-reset" type="button" aria-label="Reset view" title="Reset view">' + reset + '</button></div>'
+            '<div class="xload"><div class="xl-ring"></div><span>Building Kutch…</span></div>'
+            '<div class="xfall"><div class="xf-head"><div class="kick">Explore</div><h1>Kutch, up close</h1><p>The 3D view needs WebGL 2, which this browser does not offer, so here are the same places as cards.</p></div>' + fall + '</div>'
+            '</div>'
+            '<script type="application/json" id="x3d-data">' + data + '</script>'
+            '<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>'
+            '<script type="module" src="js/explore.js"></script>'
+            "<script>setTimeout(function(){var s=document.getElementById('x3d');if(!s.classList.contains('ready'))s.classList.add('nogl')},15000)</script>"
+            '<noscript><style>.x3d>:not(.xfall){display:none!important}.x3d{height:auto}.xfall{display:grid!important;gap:16px;padding:40px 20px}</style></noscript>'
+            '<style>' + X3D_CSS + '</style>')
+
+
+X3D_TEASER = ('<section class="xteaser"><div class="wrap split"><div class="reveal"><div class="kick">New · Explore in 3D</div><h2>Step into Kutch</h2>'
+              '<p>Fly over a 3D Kutch – the white salt Rann, village tanks, round bhunga huts, fodder fields and orchards – and visit each of our programs where the work happens. '
+              'Switch from dry season to monsoon and watch the tanks fill.</p>'
+              '<div class="xt-tags"><span>9 programs to visit</span><span>Guided tour</span><span>Dry season ⇄ monsoon</span></div>'
+              '<a class="btn" href="explore.html">Explore in 3D →</a></div>'
+              '<div class="reveal"><a class="xt-img" href="explore.html"><img src="img/explore-poster.jpg" alt="3D view of a stylised Kutch landscape with program pins" loading="lazy"></a></div></div></section>')
+
+
 def hero_page(title, sub, img=None):
     im = f'<img src="img/{img}.jpg" alt="">' if img else ""
     return f'<div class="page-hero{" img" if img else ""}">{im}<div class="wrap"><div class="kick" style="color:#f0c46f">KFFFDT</div><h1>{E(title)}</h1><p>{E(sub)}</p></div>{WAVE("#f7f1e3")}</div>'
@@ -1080,6 +1251,7 @@ def build():
 {BANNER}
 {FFF}
 <section><div class="wrap"><div class="sh reveal"><div><div class="kick">What we do</div><h2 style="margin:0">Our programs</h2></div><a class="more" href="projects.html">All programs →</a></div><div class="grid g3">{prog_cards(ORDER)}</div></div></section>
+{X3D_TEASER}
 <section class="alt-bg"><div class="wrap"><div class="sh reveal"><div><div class="kick">Results</div><h2 style="margin:0">Our impact, 1998 – 2024</h2></div><a class="more" href="activities.html">Full activity report →</a></div>
 <div class="grid g3"><a class="stat reveal" href="activities.html"><b data-count="1421.67" data-dec="2">0</b><span>Rs. lacs · water conservation · 705 structures</span><i class="go">View details →</i></a>
 <a class="stat reveal" href="activities.html"><b data-count="620.82" data-dec="2">0</b><span>Rs. lacs · WASMO village water schemes · 37 villages</span><i class="go">View details →</i></a>
@@ -1138,6 +1310,7 @@ def build():
 
     # UPDATES
     W("updates.html", page("updates.html", "Latest updates", updates_page()))
+    W("explore.html", page("explore.html", "Explore Kutch in 3D", explore_body(), "Fly over a 3D Kutch and visit the Trust's programs – water, fodder, fruit, forest, animal health, education and rebuilding.", bare=True))
     for i, u in enumerate(UPDATES):
         W(f"u-{u['slug']}.html", page(f"u-{u['slug']}.html", u["title"], update_page(i), u["summary"]))
 

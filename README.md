@@ -6,6 +6,8 @@ Live preview (GitHub Pages): https://tejas20002.github.io/kfffdt/
 - `original/`   – offline mirror of the 14 real pages (WordPress/Elementor output, static)
 - `new/`        – redesigned static site (plain HTML/CSS, no CMS)
 - `build_new.py` – generates `new/*.html`; edit content/styles there, then `python3 build_new.py`
+- `new/js/explore.js` – the "Explore in 3D" page (three.js scene + glass UI); program pins and text live in `X3D` in `build_new.py`
+- `new/vendor/three/` – three.js r187 (MIT), served from the site itself, no CDN
 - `video-src/make_story_video.py` – builds the story video (working files and masters are not in git)
 - `serve.sh`    – run `./serve.sh` then open http://localhost:8080
 

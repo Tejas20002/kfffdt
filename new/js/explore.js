@@ -133,37 +133,35 @@ async function init() {
   for (let k = 0; k < N; k++) pa.setY(k, HY[k]);
   geo = geo.toNonIndexed();
   geo.computeVertexNormals();
-  const PAL = {   // [dry season, monsoon]
-    sea: ['#b7a57c', '#b7a57c'], rann: ['#efece4', '#d3e5e2'], rannW: ['#e0dacb', '#8fc2d6'], bare: ['#c9ac80', '#b8a67c'],
-    crop: ['#cfae74', '#86b55e'], shrub: ['#a99a5e', '#5f9047'], grass: ['#d2bf80', '#95c262'], tree: ['#5a7d42', '#356f38'],
-    built: ['#cbbfae', '#c2b8a8'], wet: ['#aaae8b', '#6fae94'], mangr: ['#3d6a4c', '#2b6b47'],
+  const PAL = {   // [summer, monsoon, winter]
+    sea: ['#b7a57c', '#b7a57c', '#b7a57c'], rann: ['#efece4', '#d3e5e2', '#f8f7f3'], rannW: ['#e0dacb', '#8fc2d6', '#eef0ec'], bare: ['#c9ac80', '#b8a67c', '#c3ab84'],
+    crop: ['#cfae74', '#86b55e', '#b9b766'], shrub: ['#a99a5e', '#5f9047', '#8a9656'], grass: ['#d2bf80', '#95c262', '#c8bf7a'], tree: ['#5a7d42', '#356f38', '#4c7a40'],
+    built: ['#cbbfae', '#c2b8a8', '#cfc5b6'], wet: ['#aaae8b', '#6fae94', '#94b49c'], mangr: ['#3d6a4c', '#2b6b47', '#346a4a'],
   };
   for (const k in PAL) PAL[k] = PAL[k].map(col);
   const OUTC = col('#ebe4d4');
   const CLASS = { 10: 'tree', 20: 'shrub', 30: 'grass', 40: 'crop', 50: 'built', 90: 'wet', 95: 'mangr' };
   const kind = k => { const c = CL[k], h = HM[k]; if (isSea(k)) return 'sea'; if (c === 80 || c === 0) return 'rannW'; if (c === 60) return h < 25 ? 'rann' : 'bare'; return CLASS[c] || 'bare'; };
   const P = geo.attributes.position.array, nv = geo.attributes.position.count;
-  const cDry = new Float32Array(nv * 3), cWet = new Float32Array(nv * 3);
-  const tA = new THREE.Color(), tB = new THREE.Color();
-  const vDry = new Float32Array(N * 3), vWet = new Float32Array(N * 3);   // one colour per grid point, blended across each triangle
+  const tC = new THREE.Color();
+  const perPoint = [0, 1, 2].map(() => new Float32Array(N * 3));   // one colour per grid point and season, blended across each triangle
   for (let k = 0; k < N; k++) {
-    const kd = kind(k);
-    tA.copy(PAL[kd][0]); tB.copy(PAL[kd][1]);
-    if (!IN[k] && kd !== 'sea') { tA.lerp(OUTC, .62); tB.lerp(OUTC, .62); }
-    const f = kd === 'crop' ? .88 + hash(k * .37, 1.3) * .2 : .96 + hash(k * .21, 7.1) * .07;   // farm patchwork
-    vDry.set([tA.r * f, tA.g * f, tA.b * f], k * 3); vWet.set([tB.r * f, tB.g * f, tB.b * f], k * 3);
+    const kd = kind(k), f = kd === 'crop' ? .88 + hash(k * .37, 1.3) * .2 : .96 + hash(k * .21, 7.1) * .07;   // farm patchwork
+    for (let si = 0; si < 3; si++) {
+      tC.copy(PAL[kd][si]); if (!IN[k] && kd !== 'sea') tC.lerp(OUTC, .62);
+      perPoint[si].set([tC.r * f, tC.g * f, tC.b * f], k * 3);
+    }
   }
-  for (let v = 0; v < nv; v++) {
-    const k = near(P[v * 3], P[v * 3 + 2]);
-    cDry.set(vDry.subarray(k * 3, k * 3 + 3), v * 3); cWet.set(vWet.subarray(k * 3, k * 3 + 3), v * 3);
-  }
-  geo.setAttribute('color', new THREE.BufferAttribute(cDry, 3));
-  geo.setAttribute('color2', new THREE.BufferAttribute(cWet, 3));
-  const seasonU = { value: 0 };
+  const perVert = [0, 1, 2].map(() => new Float32Array(nv * 3));
+  for (let v = 0; v < nv; v++) { const k = near(P[v * 3], P[v * 3 + 2]); for (let si = 0; si < 3; si++) perVert[si].set(perPoint[si].subarray(k * 3, k * 3 + 3), v * 3); }
+  geo.setAttribute('color', new THREE.BufferAttribute(perVert[0], 3));
+  geo.setAttribute('color2', new THREE.BufferAttribute(perVert[1], 3));
+  geo.setAttribute('color3', new THREE.BufferAttribute(perVert[2], 3));
+  const seasonU = { value: new THREE.Vector3(1, 0, 0) };   // weights: summer, monsoon, winter
   const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, metalness: 0 });
-  terrainMat.onBeforeCompile = sh => {   // blend dry -> monsoon colours on the GPU
-    sh.uniforms.uSeason = seasonU;
-    sh.vertexShader = 'attribute vec3 color2;\nuniform float uSeason;\n' + sh.vertexShader.replace('#include <color_vertex>', '#include <color_vertex>\n  vColor.rgb = mix(color.rgb, color2, uSeason);');
+  terrainMat.onBeforeCompile = sh => {   // blend the three season palettes on the GPU
+    sh.uniforms.uSeasonW = seasonU;
+    sh.vertexShader = 'attribute vec3 color2;\nattribute vec3 color3;\nuniform vec3 uSeasonW;\n' + sh.vertexShader.replace('#include <color_vertex>', '#include <color_vertex>\n  vColor.rgb = color.rgb * uSeasonW.x + color2 * uSeasonW.y + color3 * uSeasonW.z;');
   };
   const terrain = new THREE.Mesh(geo, terrainMat);
   terrain.receiveShadow = true;
@@ -327,6 +325,19 @@ async function init() {
     scene.add(g); clouds.push(g);
   }
 
+  // winter: Rann Utsav tent city by Dhordo, migratory birds over Banni's wetlands
+  const tents = [];
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) { const x = dh.x + 3 + c * 1.15, z = dh.z - 2.5 + r * 1.2; tents.push({ x, z, y: height(x, z) - .02, ry: Math.PI / 4 }); }
+  const tentG = new THREE.ConeGeometry(.55, .9, 4); tentG.translate(0, .45, 0);
+  const tentMesh = instanced(tentG, M('#fbf8f0'), tents.map(t => ({ ...t, s: .001 })));
+  const birdMat = new THREE.LineBasicMaterial({ color: '#25352c', transparent: true, opacity: 0, depthWrite: false });
+  const flocks = [0, 1, 2].map(f => {
+    const pts = [];
+    for (let b = 0; b < 7; b++) { const bx = 9 + f * 4 + (b % 2 ? 1 : -1) * Math.ceil(b / 2) * .9, bz = Math.ceil(b / 2) * .9, by = (R() - .5) * .6; pts.push(bx - .7, by + .3, bz, bx, by, bz, bx, by, bz, bx + .7, by + .3, bz); }
+    const g = new THREE.Group(), l = new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3)), birdMat);
+    g.add(l); g.position.set(bn.x + (f - 1) * 6, 15 + f * 2.5, bn.z + (f - 1) * 4); g.rotation.y = f * 2.1; g.visible = false; g.userData.v = .22 + f * .07; scene.add(g); return g;
+  });
+
   // rain (only while the monsoon arrives)
   const DROPS = 2600, rainPos = new Float32Array(DROPS * 6);
   for (let i = 0; i < DROPS; i++) { const x = HOME_TGT.x + (R() - .5) * 460, y = R() * 140, z = HOME_TGT.z + (R() - .5) * 330; rainPos.set([x, y, z, x + .3, y + 2.4, z], i * 6); }
@@ -361,7 +372,7 @@ async function init() {
     b.addEventListener('click', () => { tour(false); open(i); });
     pinLayer.appendChild(b); return b;
   });
-  const labels = meta.places.map(p => {
+  const labels = meta.places.concat([{ name: 'Dhordo', kind: 'town', ...ll(23.833, 69.644) }]).map(p => {
     const el = document.createElement('div'); el.className = 'xlab ' + p.kind; el.textContent = p.name; labLayer.appendChild(el);
     const y = p.kind === 'water' || p.kind === 'region' ? 1 : Math.max(height(p.x, p.z), .2) + (p.kind === 'peak' ? 1.4 : .5);
     return { el, kind: p.kind, v: new THREE.Vector3(p.x, y, p.z) };
@@ -437,37 +448,63 @@ async function init() {
   controls.addEventListener('start', () => { mini(); lastAct = performance.now(); if (tourT) tour(false); fly = null; controls.enabled = true; });
 
   // seasons
-  let season = 0, seasonTo = 0, rainUntil = 0, rainAmt = 0, toastT;
-  const seasonBtn = q('.xd-season');
-  function showToast(t) { toast.textContent = t; toast.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('show'), 3600); }
-  function setSeason(v, quiet) {
-    seasonTo = v; if (REDUCE) season = v;
-    seasonBtn.setAttribute('aria-pressed', v ? 'true' : 'false');
-    seasonBtn.querySelector('.lbl').textContent = v ? 'Monsoon' : 'Dry season';
-    if (v && !REDUCE) rainUntil = performance.now() + 4200;
-    if (!quiet) showToast(v ? 'The monsoon arrives – the Rann floods, tanks fill and the land turns green' : 'Dry season – the Rann turns to salt, tanks run low');
-    if (REDUCE) applySeason(v);
+  // three seasons: 0 summer (Mar–Jun), 1 monsoon (Jul–Sep), 2 winter (Nov–Feb); every setting is a weighted mix of the three
+  let sw = [1, 0, 0], swFrom = [1, 0, 0], sIdx = 0, sK = 1, rainUntil = 0, rainAmt = 0, toastT;
+  const seasonBox = q('.xd-seasons'), seasonBtns = [...seasonBox.querySelectorAll('button')];
+  const TOAST = [
+    'Summer (March–June) – hot and hazy; tanks run low and Kesar mangoes ripen in the orchards',
+    'Monsoon (July–September) – the Rann floods, tanks fill and the land turns green',
+    'Winter (November–February) – the Rann dries to white salt, Rann Utsav tents rise at Dhordo and migratory birds come to Banni',
+  ];
+  function showToast(t) { toast.textContent = t; toast.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('show'), 4200); }
+  function setSeason(i, quiet) {
+    sIdx = i; swFrom = sw.slice(); sK = 0;
+    seasonBox.style.setProperty('--i', i);
+    seasonBtns.forEach((b, k) => b.setAttribute('aria-checked', k === i ? 'true' : 'false'));
+    if (i === 1 && !REDUCE) rainUntil = performance.now() + 4200;
+    if (!quiet) showToast(TOAST[i]);
+    if (REDUCE) { sK = 1; sw = [0, 1, 2].map(k => k === i ? 1 : 0); applySeason(sw); }
   }
-  seasonBtn.addEventListener('click', () => setSeason(seasonTo ? 0 : 1));
+  seasonBtns.forEach((b, i) => b.addEventListener('click', () => setSeason(i)));
+  seasonBox.addEventListener('keydown', e => {
+    const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+    if (!d) return; e.preventDefault(); e.stopPropagation(); const n = (sIdx + d + 3) % 3; setSeason(n); seasonBtns[n].focus();
+  });
 
-  const CROWN = [col('#7f9150'), col('#4f8f4c')], SHRUB = [col('#9a9256'), col('#5d8d45')], CROP = [col('#cdb77a'), col('#5f9e4f')], CLOUD = [col('#ffffff'), col('#b9c2cb')];
-  const SUNC = [col('#ffe6bd'), col('#f1f2ee')], HEMI = [col('#fff4dc'), col('#e9eef0')], SEAC = [col('#3d8db7'), col('#4b8aa3')];
-  function applySeason(s) {
-    seasonU.value = s;
-    mats.crown.color.lerpColors(CROWN[0], CROWN[1], s); mats.shrub.color.lerpColors(SHRUB[0], SHRUB[1], s); mats.crop.color.lerpColors(CROP[0], CROP[1], s);
-    cloudMat.color.lerpColors(CLOUD[0], CLOUD[1], s); cloudMat.emissiveIntensity = .14 * (1 - s);
-    sun.color.lerpColors(SUNC[0], SUNC[1], s); sun.intensity = 2.7 - 1.0 * s;
-    hemi.color.lerpColors(HEMI[0], HEMI[1], s);
-    seaMat.color.lerpColors(SEAC[0], SEAC[1], s);
-    skyU.top.value.lerpColors(SKY.dryTop, SKY.wetTop, s); skyU.bot.value.lerpColors(SKY.dryBot, SKY.wetBot, s); scene.fog.color.copy(skyU.bot.value);
-    waters.forEach(({ m, t }) => { m.position.y = s < .02 ? t.y - .1 : t.y + .02 + .14 * s; m.scale.setScalar(.6 + .4 * s); });
-    crops.forEach((c, i) => { dummy.position.set(c.x, c.y, c.z); dummy.rotation.set(0, c.ry, 0); dummy.scale.set(c.s, c.s * (.18 + .82 * s), c.s); dummy.updateMatrix(); cropMesh.setMatrixAt(i, dummy.matrix); });
+  const C3 = a => a.map(col), V3 = a => a.map(p => new THREE.Vector3(...p));
+  const SET = {
+    crown: C3(['#7f9150', '#4f8f4c', '#5f8a48']), shrub: C3(['#9a9256', '#5d8d45', '#7c8d50']), crop: C3(['#cdb77a', '#5f9e4f', '#b9b45c']),
+    cloud: C3(['#ffffff', '#b9c2cb', '#ffffff']), cloudA: [.5, .9, .38], cloudE: [.14, 0, .16],
+    sun: C3(['#ffdcaa', '#f1f2ee', '#fff3dc']), sunI: [3, 1.7, 2.5], sunP: V3([[150, 320, 110], [170, 260, 120], [235, 150, 165]]),
+    hemi: C3(['#fff1d6', '#e9eef0', '#f4f7fb']), sea: C3(['#3d8db7', '#4b8aa3', '#2c7fb4']),
+    skyT: C3(['#9cc6df', '#7f95a8', '#5fa9e6']), skyB: C3(['#f6dfb6', '#e1e6e1', '#eaf0f2']), fogN: [360, 400, 560], fogF: [1100, 1150, 1600],
+    water: [.18, 1, .7], cropH: [.18, 1, .62], fruit: [1, .35, 0],
+  };
+  const tmpV = new THREE.Vector3();
+  function applySeason(w) {
+    const n = a => a[0] * w[0] + a[1] * w[1] + a[2] * w[2];
+    const c = (out, a) => out.setRGB(n([a[0].r, a[1].r, a[2].r]), n([a[0].g, a[1].g, a[2].g]), n([a[0].b, a[1].b, a[2].b]));
+    seasonU.value.set(w[0], w[1], w[2]);
+    c(mats.crown.color, SET.crown); c(mats.shrub.color, SET.shrub); c(mats.crop.color, SET.crop);
+    c(cloudMat.color, SET.cloud); cloudMat.opacity = n(SET.cloudA); cloudMat.emissiveIntensity = n(SET.cloudE);
+    c(sun.color, SET.sun); sun.intensity = n(SET.sunI);
+    tmpV.set(0, 0, 0); SET.sunP.forEach((p, k) => tmpV.addScaledVector(p, w[k])); sun.position.copy(HOME_TGT).add(tmpV);
+    c(hemi.color, SET.hemi); c(seaMat.color, SET.sea);
+    c(skyU.top.value, SET.skyT); c(skyU.bot.value, SET.skyB); scene.fog.color.copy(skyU.bot.value); scene.fog.near = n(SET.fogN); scene.fog.far = n(SET.fogF);
+    const lvl = n(SET.water);
+    waters.forEach(({ m, t }) => { m.position.y = lvl < .05 ? t.y - .1 : t.y + .02 + .14 * lvl; m.scale.setScalar(.6 + .4 * lvl); });
+    const ch = n(SET.cropH);
+    crops.forEach((cr, i) => { dummy.position.set(cr.x, cr.y, cr.z); dummy.rotation.set(0, cr.ry, 0); dummy.scale.set(cr.s, cr.s * ch, cr.s); dummy.updateMatrix(); cropMesh.setMatrixAt(i, dummy.matrix); });
     cropMesh.instanceMatrix.needsUpdate = true;
-    const fs = Math.max(.001, sstep(.55, 1, s));
+    const fs = Math.max(.001, sstep(.3, 1, n(SET.fruit)));
     fruits.forEach((f, i) => { dummy.position.set(f.x, f.y, f.z); dummy.rotation.set(0, 0, 0); dummy.scale.setScalar(fs); dummy.updateMatrix(); fruitMesh.setMatrixAt(i, dummy.matrix); });
     fruitMesh.instanceMatrix.needsUpdate = true;
+    const ts = Math.max(.001, sstep(.35, 1, w[2]));
+    tents.forEach((t, i) => { dummy.position.set(t.x, t.y, t.z); dummy.rotation.set(0, t.ry, 0); dummy.scale.setScalar(ts); dummy.updateMatrix(); tentMesh.setMatrixAt(i, dummy.matrix); });
+    tentMesh.instanceMatrix.needsUpdate = true;
+    birdMat.opacity = sstep(.4, 1, w[2]); flocks.forEach(g => { g.visible = birdMat.opacity > .02; });
   }
-  applySeason(0);
+  applySeason(sw);
 
   // ---------------- size, loop ----------------
   const W = { w: 1, h: 1 };
@@ -504,6 +541,7 @@ async function init() {
         if (!l.w) { l.w = l.el.offsetWidth || 60; l.h = l.el.offsetHeight || 22; }
         const a = { x0: p.x - l.w / 2, x1: p.x + l.w / 2, y0: p.y - 4, y1: p.y - 4 + l.h };
         if (boxes.some(b => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0)) show = false;
+        else boxes.push(a);   // later labels give way to earlier ones (e.g. Dhordo to Khavda until you zoom in)
       }
       l.el.classList.toggle('off', !show);
       if (show) l.el.style.transform = `translate3d(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px,0)`;
@@ -522,11 +560,12 @@ async function init() {
     controls.autoRotate = !REDUCE && introDone && cur < 0 && !fly && now - lastAct > 7000;
     controls.update();
 
-    if (season !== seasonTo) {
-      season = seasonTo > season ? Math.min(seasonTo, season + dt / 2.8) : Math.max(seasonTo, season - dt / 2.2);
-      applySeason(ease(season));
+    if (sK < 1) {
+      sK = Math.min(1, sK + dt / 2.6); const e = ease(sK);
+      sw = swFrom.map((v, k) => v + ((k === sIdx ? 1 : 0) - v) * e);
+      applySeason(sw);
     }
-    const rainTo = seasonTo === 1 && now < rainUntil ? 1 : 0;
+    const rainTo = sIdx === 1 && now < rainUntil ? 1 : 0;
     rainAmt += (rainTo - rainAmt) * Math.min(1, dt * 2.5);
     rain.visible = rainAmt > .01; rainMat.opacity = rainAmt * .6;
     if (rain.visible) {
@@ -541,6 +580,7 @@ async function init() {
       for (const c of clouds) { c.position.x += c.userData.v * dt; if (c.position.x > HOME_TGT.x + 320) c.position.x = HOME_TGT.x - 320; }
       for (const g of cows) g.userData.head.position.y = .95 - (Math.sin(t * 1.3 + g.userData.ph) > .6 ? .35 : 0);
       flag.rotation.y = Math.sin(t * 2.4) * .25;
+      for (const g of flocks) if (g.visible) g.rotation.y += g.userData.v * dt;
       for (let i = 0; i < spots.length; i++) {
         const s = spots[i], on = i === cur;
         s.gem.position.y = s.y + 9 + Math.sin(t * 1.6 + i) * .5; s.gem.rotation.y = t * .9 + i;

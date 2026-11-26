@@ -1159,16 +1159,19 @@ X3D_CSS = """
 .xp-act{display:flex;gap:8px;align-items:center}
 .xp-go{flex:1;text-align:center;background:var(--green);color:#fff;font-weight:600;padding:11px 16px;border-radius:99px;font-size:.9rem}.xp-go:hover{background:#244a30}
 .xp-prev,.xp-next{border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.6);border-radius:99px;padding:10px 14px;font:600 .88rem Inter,sans-serif;cursor:pointer;color:var(--ink)}.xp-prev:hover,.xp-next:hover{background:#fff}
-.xdock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:7;display:flex;align-items:center;gap:4px;padding:7px;border-radius:26px;max-width:calc(100% - 24px)}
+.xdock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:7;width:max-content;display:flex;align-items:center;gap:4px;padding:7px;border-radius:26px;max-width:calc(100% - 24px)}
 .xd-places{display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none}.xd-places::-webkit-scrollbar{display:none}
 .xd-places button{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:76px;padding:8px 4px 7px;border:0;border-radius:18px;background:transparent;font:600 .7rem/1.15 Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
 .xd-places button i{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--c);color:#fff;box-shadow:0 6px 14px -6px var(--c);transition:transform .3s cubic-bezier(.2,.8,.2,1.4)}.xd-places svg{width:18px;height:18px}
 .xd-places button:hover{background:rgba(255,255,255,.55)}.xd-places button:hover i{transform:translateY(-3px) scale(1.06)}.xd-places button.on{background:#fff;box-shadow:0 6px 16px -10px rgba(0,0,0,.4)}
 .xd-sep{flex:none;width:1px;align-self:stretch;margin:8px 4px;background:rgba(29,42,31,.15)}
-.xd-season,.xd-tour,.xd-reset{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;border:0;border-radius:18px;background:rgba(255,255,255,.5);font:600 .82rem Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
-.xd-season:hover,.xd-tour:hover,.xd-reset:hover{background:#fff}.xd-tour svg,.xd-reset svg{width:16px;height:16px}
-.xd-season .sw{flex:none;width:40px;height:22px;border-radius:99px;background:#d9c79c;position:relative;transition:background .4s}.xd-season .sw i{position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .4s cubic-bezier(.2,.8,.2,1.3)}
-.xd-season[aria-pressed=true] .sw{background:#3b97cf}.xd-season[aria-pressed=true] .sw i{transform:translateX(18px)}.xd-season .lbl{min-width:6.4em;text-align:left}
+.xd-tour,.xd-reset{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;border:0;border-radius:18px;background:rgba(255,255,255,.5);font:600 .82rem Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
+.xd-tour:hover,.xd-reset:hover{background:#fff}.xd-tour svg,.xd-reset svg{width:16px;height:16px}
+.xd-seasons{flex:none;position:relative;display:grid;grid-template-columns:repeat(3,1fr);height:48px;padding:4px;border-radius:18px;background:rgba(255,255,255,.45)}
+.xs-glide{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 3);border-radius:14px;background:#fff;box-shadow:0 4px 12px -6px rgba(0,0,0,.35);transform:translateX(calc(var(--i) * 100%));transition:transform .45s cubic-bezier(.2,.8,.2,1.15)}
+.xd-seasons button{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 11px;border:0;background:none;border-radius:14px;font:600 .8rem Inter,sans-serif;color:#4c584d;cursor:pointer;transition:color .3s}
+.xd-seasons button svg{width:16px;height:16px;flex:none;transition:transform .4s cubic-bezier(.2,.8,.2,1.4)}.xd-seasons button[aria-checked=true]{color:var(--ink)}.xd-seasons button[aria-checked=true] svg{color:var(--k);transform:scale(1.15)}
+.xd-seasons button:hover svg{transform:rotate(-12deg) scale(1.1)}
 .xd-tour[aria-pressed=true]{background:var(--green);color:#fff}
 .xtoast{position:absolute;left:50%;top:22px;z-index:8;transform:translate(-50%,-14px);opacity:0;padding:10px 18px;border-radius:99px;font-weight:600;font-size:.88rem;color:var(--ink);pointer-events:none;transition:opacity .4s,transform .5s cubic-bezier(.2,.8,.2,1);max-width:min(560px,calc(100% - 40px));text-align:center}
 .xtoast.show{opacity:1;transform:translate(-50%,0)}
@@ -1186,8 +1189,8 @@ X3D_CSS = """
 .xp-in{padding:16px 18px;border-radius:24px;max-height:calc(100svh - var(--hh) - 210px);overflow:auto}
 .xp-title{font-size:1.3rem;margin:6px 0 8px}.xp-stat b{font-size:1.5rem}.xp-text{font-size:.86rem;margin:10px 0}.xp-facts{margin-bottom:12px}
 .xpin span{display:none}.xpin{padding:4px}.xpin.on span{display:inline}.xpin.on{padding-right:10px}
-.xdock{left:10px;right:10px;bottom:10px;transform:none;max-width:none}.xd-places{flex:1}
-.xd-places button{width:62px;font-size:.64rem}.xd-season .lbl,.xd-tour span{display:none}.xd-season,.xd-tour,.xd-reset{padding:0 10px}
+.xdock{left:10px;right:10px;bottom:10px;transform:none;max-width:none;width:auto}.xd-places{flex:1}
+.xd-places button{width:62px;font-size:.64rem}.xd-seasons button span,.xd-tour span{display:none}.xd-seasons button{padding:0 9px}.xd-tour,.xd-reset{padding:0 10px}
 .xtoast{top:auto;bottom:100px}
 }
 @media(prefers-reduced-motion:reduce){.xpanel,.xp-in,.xtoast{transition:none}.xl-ring{animation:none}}
@@ -1214,7 +1217,10 @@ def explore_body():
             '<div class="xp-act"><a class="xp-go" href="#"></a><button class="xp-prev" type="button" aria-label="Previous place">←</button><button class="xp-next" type="button">Next →</button></div>'
             '</div></aside>'
             '<div class="xdock xg" role="toolbar" aria-label="Places and view controls"><div class="xd-places">' + places + '</div><span class="xd-sep"></span>'
-            '<button class="xd-season" type="button" aria-pressed="false"><span class="sw"><i></i></span><span class="lbl">Dry season</span></button>'
+            '<div class="xd-seasons" role="radiogroup" aria-label="Season" style="--i:0"><span class="xs-glide"></span>'
+            '<button type="button" role="radio" aria-checked="true" title="Summer" style="--k:#e09a2f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Summer</span></button>'
+            '<button type="button" role="radio" aria-checked="false" title="Monsoon" style="--k:#3b97cf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 15a4 4 0 0 1 .6-8A5.5 5.5 0 0 1 18 8.5a3.5 3.5 0 0 1-.5 6.5H7zM8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span>Monsoon</span></button>'
+            '<button type="button" role="radio" aria-checked="false" title="Winter" style="--k:#5b7fd1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11M9.5 3.5 12 6l2.5-2.5M9.5 20.5 12 18l2.5 2.5"/></svg><span>Winter</span></button></div>'
             '<button class="xd-tour" type="button" aria-pressed="false">' + play + '<span>Tour</span></button>'
             '<button class="xd-reset" type="button" aria-label="Reset view" title="Reset view">' + reset + '</button></div>'
             '<div class="xload"><div class="xl-ring"></div><span>Building Kutch…</span></div>'
@@ -1230,8 +1236,8 @@ def explore_body():
 
 X3D_TEASER = ('<section class="xteaser"><div class="wrap split"><div class="reveal"><div class="kick">New · Explore in 3D</div><h2>Step into Kutch</h2>'
               '<p>Fly over the real shape of Kutch – built from satellite terrain and land-cover data – from the white salt Rann and Banni grassland to the Gulf coast, and visit each of our programs where the work happens. '
-              'Switch from dry season to monsoon and watch the Rann flood and the tanks fill.</p>'
-              '<div class="xt-tags"><span>Real terrain &amp; land cover</span><span>9 programs to visit</span><span>Dry season ⇄ monsoon</span></div>'
+              'Switch between summer, monsoon and winter: the Rann floods, then dries to white salt, and the tanks fill and run low.</p>'
+              '<div class="xt-tags"><span>Real terrain &amp; land cover</span><span>9 programs to visit</span><span>Summer · monsoon · winter</span></div>'
               '<a class="btn" href="explore.html">Explore in 3D →</a></div>'
               '<div class="reveal"><a class="xt-img" href="explore.html"><img src="img/explore-poster.jpg" alt="3D view of Kutch built from real terrain data, with program pins" loading="lazy"></a></div></div></section>')
 

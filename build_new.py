@@ -1060,7 +1060,7 @@ FFF = fff_section()
 
 
 # ---- Explore Kutch in 3D (three.js scene in new/js/explore.js, vendored three.js r187 in new/vendor/three) ----
-# x/z place each program on the stylised landscape (x: west -> east, z: north -> south; salt Rann north, sea south).
+# lat/lon place each program on the real map (taluka level where the site or news names a place; "shown near" otherwise).
 X3D_ICON = {
     "jal": '<path d="M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>',
     "water": '<path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
@@ -1074,39 +1074,39 @@ X3D_ICON = {
 }
 X3D_SVG = lambda k: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>' % X3D_ICON[k]
 X3D = [
-    dict(id="jal", short="Jal Mandir", kick="Kutch Jal Mandir Abhiyan", title="Village tanks, revived together", x=42, z=0, color="#3b97cf",
+    dict(id="jal", short="Jal Mandir", kick="Kutch Jal Mandir Abhiyan", title="Village tanks, revived together", lat=23.34, lon=70.25, where="Kumbhardi, Bhachau taluka – one of 332 tanks across Kutch", color="#3b97cf",
          stat=["332", "village tanks revived since 2012"],
          text="Old village tanks are desilted with the community: the project pays for an excavator, villagers bring their tractors, and the silt goes back to strengthen bunds and fields.",
          facts=[["8,835 lac L", "water storage added"], ["43%", "of the cost carried by villagers"]], link="p-kutch-jal-mandir-abhiyan.html", link_label="Open Jal Mandir"),
-    dict(id="water", short="Check dams", kick="Water conservation", title="Holding the rain where it falls", x=-40, z=12, color="#2f86c0",
+    dict(id="water", short="Check dams", kick="Water conservation", title="Holding the rain where it falls", lat=23.14, lon=68.95, where="Abdasa taluka – the Trust began at Kothara in 1989", color="#2f86c0",
          stat=["705", "water structures built"],
          text="Storage and percolation tanks, check dams, farm ponds and recharge wells keep rainwater in the village and push it back into the ground.",
          facts=[["141", "storage tanks"], ["134", "farm ponds"]], link="p-water-conservation.html", link_label="Open water conservation"),
-    dict(id="drink", short="Drinking water", kick="Drinking water · WASMO", title="Water schemes run by the village", x=66, z=30, color="#4aa7bf",
+    dict(id="drink", short="Drinking water", kick="Drinking water · WASMO", title="Water schemes run by the village", lat=23.47, lon=70.52, where="37 villages across Kutch (shown near Rapar)", color="#4aa7bf",
          stat=["37", "villages with community-run water schemes"],
          text="Under WASMO, village committees build and manage their own drinking-water schemes, with roof-top rainwater harvesting at schools.",
          facts=[["₹620.82 lac", "invested in village schemes"], ["9", "roof-top harvesting systems"]], link="p-decentralized-drinking-water-supply-scheme-project.html", link_label="Open drinking water"),
-    dict(id="fodder", short="Fodder", kick="Fodder security", title="Green fodder for village cattle", x=16, z=30, color="#5f9e4f",
+    dict(id="fodder", short="Fodder", kick="Fodder security", title="Green fodder for village cattle", lat=23.43, lon=69.42, where="Farmers across Kutch (shown near Nakhatrana)", color="#5f9e4f",
          stat=["14,21,800", "Napier (NB21) green-fodder cuttings"],
          text="Fodder seeds for rainfed farmers, Napier cuttings for irrigated farms, grazing land for the village herd and sheds to store dry fodder.",
          facts=[["1,090", "farmers in the fodder project"], ["170 acres", "grazing land developed"]], link="p-agriculture-development.html", link_label="Open agriculture"),
-    dict(id="fruit", short="Fruit & seeds", kick="Agriculture development", title="Orchards, seeds and healthy soil", x=-52, z=32, color="#e08326",
+    dict(id="fruit", short="Fruit & seeds", kick="Agriculture development", title="Orchards, seeds and healthy soil", lat=22.96, lon=69.28, where="Mandvi taluka – the Beej Rath set off from Nani Khakhar", color="#e08326",
          stat=["21,725", "fruit plants promoted"],
          text="Anmol Beej Bank – Gujarat's largest traditional seed bank – keeps local seeds alive, and the Bio Resource Centre helps farmers move to chemical-free farming.",
          facts=[["1,870", "farmers at the Bio Resource Centre"], ["26", "villages on the Beej Rath route"]], link="p-agriculture-development.html", link_label="Open agriculture"),
-    dict(id="forest", short="Forest", kick="Tree plantation", title="Bringing the trees back", x=-8, z=-8, color="#3f7a4f",
+    dict(id="forest", short="Forest", kick="Tree plantation", title="Bringing the trees back", lat=23.30, lon=69.73, where="Bhuj – plantations with the Indian Army", color="#3f7a4f",
          stat=["8", "tree-plantation projects"],
          text="The Trust began in 1989 because trees were disappearing from Kutch. We plant with villages and with the Indian Army in Bhuj, and broadcast seed balls on open land.",
          facts=[["₹26.25 lac", "invested in plantation"], ["1989", "the year we began"]], link="about.html", link_label="Why we began"),
-    dict(id="animal", short="Animal health", kick="Animal health care", title="Healthy herds, healthy families", x=22, z=48, color="#a4492b",
+    dict(id="animal", short="Animal health", kick="Animal health care", title="Healthy herds, healthy families", lat=22.93, lon=69.62, where="Mundra taluka – 11 villages", color="#a4492b",
          stat=["45,000+", "animals vaccinated against brucellosis in Mundra since 2012"],
          text="Pashupalak Mitra centres vaccinate female calves, test milk and blood for Brucella and run awareness camps with pastoral families.",
          facts=[["11", "villages in Mundra, with Adani Foundation"], ["NDDB", "among our animal-health partners"]], link="p-animal-health-care.html", link_label="Open animal health"),
-    dict(id="rebuild", short="Rebuilding", kick="Disaster management", title="After the 2001 earthquake", x=74, z=-18, color="#c98a2b",
+    dict(id="rebuild", short="Rebuilding", kick="Disaster management", title="After the 2001 earthquake", lat=23.17, lon=70.12, where="A village rebuilt after 2001 (shown near Anjar)", color="#c98a2b",
          stat=["134", "permanent houses built"],
          text="After the 2001 earthquake the Trust put up temporary shelters, then rebuilt a village with a school, community centre, drinking water, sanitation and solar street lights.",
          facts=[["174", "temporary shelters"], ["24", "houses repaired and retrofitted"]], link="p-natural-disaster-management.html", link_label="Open disaster relief"),
-    dict(id="school", short="Van Shala", kick="Primary education", title="A school where there was none", x=-72, z=-30, color="#7d63b0",
+    dict(id="school", short="Van Shala", kick="Primary education", title="A school where there was none", lat=23.66, lon=68.86, where="Kalara Wandh, Lakhpat taluka", color="#7d63b0",
          stat=["Van Shala", "forest school at Kalara Wandh, Lakhpat"],
          text="Reaching the unreached: our Van Shala – a forest school – brings primary education to children at Kalara Wandh in Lakhpat taluka, on Kutch's western edge.",
          facts=[["Lakhpat", "taluka, western Kutch"], ["Primary", "education for the unreached"]], link="p-primary-education-for-unreached-community.html", link_label="Open education"),
@@ -1122,6 +1122,19 @@ X3D_CSS = """
 .xtitle{transition:padding .4s}.xtitle.mini{padding:12px 18px}.xtitle.mini h1{font-size:1.35rem;margin:.1em 0 0}.xtitle.mini p{display:none}
 .xtitle .kick{margin:0}.xtitle h1{font:700 1.75rem/1.1 Fraunces,serif;margin:.15em 0 .35em;color:var(--ink)}.xtitle p{margin:0;font-size:.86rem;line-height:1.45;color:#4c584d}
 .xpins{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.xlabels{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.xlab{position:absolute;left:0;top:0;white-space:nowrap;transition:opacity .4s;will-change:transform}.xlab.off{opacity:0}
+.xlab.town,.xlab.peak{font:600 .74rem/1.1 Inter,sans-serif;color:#1d2a1f;text-shadow:0 0 3px #fff,0 0 7px rgba(255,255,255,.95);translate:-50% -4px}
+.xlab.town:before{content:"";display:block;width:7px;height:7px;margin:0 auto 3px;border-radius:50%;background:#1d2a1f;box-shadow:0 0 0 2px #fff}
+.xlab.peak{color:#5a3d22}.xlab.peak:before{content:"▲";display:block;text-align:center;font-size:.7rem;margin-bottom:1px}
+.xlab.region{font:600 .78rem/1 Inter,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(70,62,44,.72);translate:-50% -50%;text-shadow:0 0 8px rgba(255,255,255,.7)}
+.xlab.water{font:italic 500 .92rem/1 Inter,sans-serif;letter-spacing:.06em;color:rgba(255,255,255,.88);translate:-50% -50%;text-shadow:0 1px 4px rgba(10,50,80,.45)}
+.xp-where{position:relative;display:flex;gap:8px;align-items:flex-start;margin:-4px 0 12px;font-size:.84rem;line-height:1.4;color:#4c584d}
+.xp-where:before{content:"";flex:none;width:9px;height:9px;margin-top:4px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c)}
+.xlegend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:.73rem;color:#4c584d}.xlegend span{display:inline-flex;align-items:center;gap:5px}
+.xlegend i{width:11px;height:11px;border-radius:3px;background:var(--s);border:1px solid rgba(0,0,0,.14)}.xlegend .bd i{width:16px;height:0;border:0;border-top:2px dashed #d4932f;border-radius:0}
+.xcred{margin-top:9px;font-size:.64rem;line-height:1.4;color:#6b766c}.xtitle.mini .xlegend{display:none}.xtitle.mini .xcred{margin-top:4px}
+.xf-where{font-size:.82rem!important;color:var(--ochre)!important}
 .xpin{position:absolute;left:0;top:0;pointer-events:auto;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:99px;border:1px solid rgba(255,255,255,.75);background:rgba(255,252,244,.74);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font:600 .8rem/1 Inter,sans-serif;color:var(--ink);white-space:nowrap;cursor:pointer;transform-origin:50% 100%;box-shadow:0 10px 24px -12px rgba(0,0,0,.45);transition:opacity .3s,background .3s,box-shadow .3s;will-change:transform}
 .xpin i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#fff;flex:none}.xpin svg{width:15px;height:15px}
 .xpin:after{content:"";position:absolute;left:50%;top:100%;width:2px;height:10px;margin-left:-1px;background:linear-gradient(rgba(255,255,255,.95),transparent)}
@@ -1168,7 +1181,7 @@ X3D_CSS = """
 .xf-card{display:block;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:18px;padding:18px 20px;color:var(--ink)}
 .xf-card h3{font:700 1.2rem/1.2 Fraunces,serif;margin:.3em 0}.xf-card p{font-size:.92rem;color:var(--muted);margin:.4em 0}.xf-card b{color:var(--green)}
 @media(max-width:760px){
-.xtitle{left:12px;top:12px;right:12px;max-width:none;padding:12px 16px;border-radius:20px}.xtitle h1{font-size:1.3rem;margin:.1em 0 0}.xtitle p{display:none}
+.xtitle{left:12px;top:12px;right:12px;max-width:none;padding:12px 16px;border-radius:20px}.xlegend{display:none}.xcred{font-size:.6rem}.xlab.region,.xlab.water{font-size:.66rem}.xtitle h1{font-size:1.3rem;margin:.1em 0 0}.xtitle p{display:none}
 .xpanel{left:12px;right:12px;top:auto;bottom:100px;width:auto;transform:translateY(24px)}.xpanel.open{transform:none}
 .xp-in{padding:16px 18px;border-radius:24px;max-height:calc(100svh - var(--hh) - 210px);overflow:auto}
 .xp-title{font-size:1.3rem;margin:6px 0 8px}.xp-stat b{font-size:1.5rem}.xp-text{font-size:.86rem;margin:10px 0}.xp-facts{margin-bottom:12px}
@@ -1185,17 +1198,19 @@ def explore_body():
     import json
     places = "".join('<button type="button" style="--c:%s" aria-current="false"><i>%s</i><span>%s</span></button>' % (d["color"], X3D_SVG(d["icon"]), E(d["short"])) for d in X3D)
     data = json.dumps([dict(d, svg=X3D_SVG(d["icon"])) for d in X3D], ensure_ascii=False).replace("</", "<\\/")
-    fall = "".join('<a class="xf-card" style="--c:%s" href="%s"><div class="kick">%s</div><h3>%s</h3><p><b>%s</b> %s</p><p>%s</p><span class="more">%s →</span></a>'
-                   % (d["color"], d["link"], E(d["kick"]), E(d["title"]), E(d["stat"][0]), E(d["stat"][1]), E(d["text"]), E(d["link_label"])) for d in X3D)
+    fall = "".join('<a class="xf-card" style="--c:%s" href="%s"><div class="kick">%s</div><h3>%s</h3><p class="xf-where">%s</p><p><b>%s</b> %s</p><p>%s</p><span class="more">%s →</span></a>'
+                   % (d["color"], d["link"], E(d["kick"]), E(d["title"]), E(d["where"]), E(d["stat"][0]), E(d["stat"][1]), E(d["text"]), E(d["link_label"])) for d in X3D)
     reset = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v5h5"/></svg>'
     play = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>'
     return ('<div class="x3d" id="x3d">'
-            '<div class="xpins" aria-hidden="true"></div>'
-            '<div class="xtitle xg"><div class="kick">Explore in 3D</div><h1>Kutch, up close</h1><p>Drag to look around, scroll or pinch to zoom, and tap a pin to visit a program. Switch to monsoon to watch the tanks fill.</p></div>'
+            '<div class="xlabels" aria-hidden="true"></div><div class="xpins" aria-hidden="true"></div>'
+            '<div class="xtitle xg"><div class="kick">Explore in 3D</div><h1>Kutch, up close</h1><p>The real shape of Kutch, from satellite data. Drag to look around, scroll or pinch to zoom, and tap a pin to visit a program.</p>'
+            '<div class="xlegend"><span style="--s:#efece4"><i></i>Salt Rann</span><span style="--s:#cfae74"><i></i>Farmland</span><span style="--s:#a99a5e"><i></i>Scrub</span><span style="--s:#8fc2d6"><i></i>Wetland</span><span style="--s:#cbbfae"><i></i>Towns</span><span class="bd"><i></i>District boundary</span></div>'
+            '<div class="xcred">Terrain: NASA SRTM (AWS Terrain Tiles) · Land cover: ESA WorldCover 2021, CC BY 4.0 · Boundary © OpenStreetMap contributors · Heights ×32</div></div>'
             '<div class="xtoast xg" role="status"></div>'
             '<aside class="xpanel" aria-hidden="true" aria-label="Program details"><div class="xp-in xg">'
             '<div class="xp-top"><span class="xp-kick"></span><span class="xp-count"></span><button class="xp-x" type="button" aria-label="Close">×</button></div>'
-            '<h2 class="xp-title"></h2><div class="xp-stat"><b></b><span></span></div><p class="xp-text"></p><div class="xp-facts"></div>'
+            '<h2 class="xp-title"></h2><p class="xp-where"></p><div class="xp-stat"><b></b><span></span></div><p class="xp-text"></p><div class="xp-facts"></div>'
             '<div class="xp-act"><a class="xp-go" href="#"></a><button class="xp-prev" type="button" aria-label="Previous place">←</button><button class="xp-next" type="button">Next →</button></div>'
             '</div></aside>'
             '<div class="xdock xg" role="toolbar" aria-label="Places and view controls"><div class="xd-places">' + places + '</div><span class="xd-sep"></span>'
@@ -1214,11 +1229,11 @@ def explore_body():
 
 
 X3D_TEASER = ('<section class="xteaser"><div class="wrap split"><div class="reveal"><div class="kick">New · Explore in 3D</div><h2>Step into Kutch</h2>'
-              '<p>Fly over a 3D Kutch – the white salt Rann, village tanks, round bhunga huts, fodder fields and orchards – and visit each of our programs where the work happens. '
-              'Switch from dry season to monsoon and watch the tanks fill.</p>'
-              '<div class="xt-tags"><span>9 programs to visit</span><span>Guided tour</span><span>Dry season ⇄ monsoon</span></div>'
+              '<p>Fly over the real shape of Kutch – built from satellite terrain and land-cover data – from the white salt Rann and Banni grassland to the Gulf coast, and visit each of our programs where the work happens. '
+              'Switch from dry season to monsoon and watch the Rann flood and the tanks fill.</p>'
+              '<div class="xt-tags"><span>Real terrain &amp; land cover</span><span>9 programs to visit</span><span>Dry season ⇄ monsoon</span></div>'
               '<a class="btn" href="explore.html">Explore in 3D →</a></div>'
-              '<div class="reveal"><a class="xt-img" href="explore.html"><img src="img/explore-poster.jpg" alt="3D view of a stylised Kutch landscape with program pins" loading="lazy"></a></div></div></section>')
+              '<div class="reveal"><a class="xt-img" href="explore.html"><img src="img/explore-poster.jpg" alt="3D view of Kutch built from real terrain data, with program pins" loading="lazy"></a></div></div></section>')
 
 
 def hero_page(title, sub, img=None):

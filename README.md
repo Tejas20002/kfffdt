@@ -8,6 +8,9 @@ Live preview (GitHub Pages): https://tejas20002.github.io/kfffdt/
 - `build_new.py` – generates `new/*.html`; edit content/styles there, then `python3 build_new.py`
 - `new/js/explore.js` – the "Explore in 3D" page (three.js scene + glass UI); program pins and text live in `X3D` in `build_new.py`
 - `new/vendor/three/` – three.js r187 (MIT), served from the site itself, no CDN
+- `new/data/kutch.bin` + `kutch.json` – the real Kutch ground for the 3D page (1.6 km grid: height, land cover, inside-district flag).
+  Rebuild with `python3 -I data-src/make_kutch_terrain.py <cache-dir> new/data`.
+  Sources: NASA SRTM via AWS Terrain Tiles, ESA WorldCover 2021 (CC BY 4.0), OpenStreetMap district boundary (ODbL) – credited on the page.
 - `video-src/make_story_video.py` – builds the story video (working files and masters are not in git)
 - `serve.sh`    – run `./serve.sh` then open http://localhost:8080
 

@@ -15,6 +15,10 @@ Live preview (GitHub Pages): https://tejas20002.github.io/kfffdt/
 - `new/data/kutch.bin` + `kutch.json` – the real Kutch ground for the 3D page (1.6 km grid: height, land cover, inside-district flag).
   Rebuild with `python3 -I data-src/make_kutch_terrain.py <cache-dir> new/data`.
   Sources: NASA SRTM via AWS Terrain Tiles, ESA WorldCover 2021 (CC BY 4.0), OpenStreetMap district boundary (ODbL) – credited on the page.
+- `new/data/boundaries.json` – real boundaries for the 3D page: the district outline (the land is cut along it) and the 10 talukas
+  from OpenStreetMap, and all 958 Kutch village boundaries from the Census 2001 maps published by DataMeet (both ODbL).
+  Rebuild with `python3 -I data-src/make_kutch_boundaries.py <cache-dir> new/data`, then run `build_new.py` again
+  (it matches every project to its village outline and warns if a name does not match).
 - `video-src/make_story_video.py` – builds the story video (working files and masters are not in git)
 - `serve.sh`    – run `./serve.sh` then open http://localhost:8080
 

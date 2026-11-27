@@ -17,9 +17,10 @@ init().catch(e => { console.error(e); stage.classList.add('nogl'); });
 
 async function init() {
   if (!document.createElement('canvas').getContext('webgl2')) throw new Error('WebGL2 not available');
-  const [meta, buf] = await Promise.all([
+  const [meta, buf, BND] = await Promise.all([
     fetch('data/kutch.json').then(r => { if (!r.ok) throw new Error('terrain meta ' + r.status); return r.json(); }),
     fetch('data/kutch.bin').then(r => { if (!r.ok) throw new Error('terrain data ' + r.status); return r.arrayBuffer(); }),
+    fetch('data/boundaries.json').then(r => { if (!r.ok) throw new Error('boundaries ' + r.status); return r.json(); }),
   ]);
 
   // ---------------- helpers ----------------
@@ -35,24 +36,25 @@ async function init() {
   const HM = new Int16Array(buf, 0, N), CL = new Uint8Array(buf, N * 2, N), IN = new Uint8Array(buf, N * 3, N);
   const X0 = -(NX - 1) * CELL / 2, Z0 = -(NY - 1) * CELL / 2;
   const ZS = .032;                                                      // scene units per metre (~32x exaggeration)
-  const EDGE = new Float32Array(N);   // 0 = open sea at the map edge, 1 = untouched (only outside Kutch)
-  for (let k = 0; k < N; k++) {
-    if (IN[k]) { EDGE[k] = 1; continue; }
-    const i = k % NX, j = Math.floor(k / NX), x = X0 + i * CELL, z = Z0 + j * CELL;
-    const d = Math.min(i, NX - 1 - i, j, NY - 1 - j) * CELL, f = 26 + 9 * Math.sin(x * .045 + .5) + 7 * Math.sin(z * .06 + 2) + 5 * Math.sin((x + z) * .11);
-    EDGE[k] = sstep(f, f + 16, d);
-  }
+  const SEA_Y = -.9;   // water level: dry land never sits below .12, so Kutch stands about a unit proud of its flat surroundings
   const SEA0 = new Uint8Array(N), SEA = new Uint8Array(N);
-  for (let k = 0; k < N; k++) SEA0[k] = ((CL[k] === 80 || CL[k] === 0) && HM[k] <= -1) || EDGE[k] < .02 ? 1 : 0;
+  for (let k = 0; k < N; k++) SEA0[k] = (CL[k] === 80 || CL[k] === 0) && HM[k] <= -1 ? 1 : 0;
   for (let k = 0; k < N; k++) {   // drop isolated one- or two-cell "sea" pits inland: they are Rann depressions, not sea
-    if (!SEA0[k] || EDGE[k] < .02) { SEA[k] = SEA0[k]; continue; }
+    if (!SEA0[k]) continue;
     const i = k % NX, j = Math.floor(k / NX); let n = 0;
-    for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) { const ii = i + a, jj = j + b; if ((a || b) && ii >= 0 && jj >= 0 && ii < NX && jj < NY) n += SEA0[jj * NX + ii]; }
+    for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) { const ii = i + a, jj = j + b; if (a || b) n += ii >= 0 && jj >= 0 && ii < NX && jj < NY ? SEA0[jj * NX + ii] : 1; }
     SEA[k] = n >= 3 ? 1 : 0;
   }
   const isSea = k => SEA[k] === 1;
   const HY = new Float32Array(N);
-  for (let k = 0; k < N; k++) HY[k] = isSea(k) ? Math.max(-2.6, Math.min(-.45, -.45 + Math.min(HM[k], 0) * ZS * .5)) : Math.max(.12, HM[k] * ZS * EDGE[k]);
+  for (let k = 0; k < N; k++) HY[k] = isSea(k) ? Math.max(-3.4, Math.min(-1.3, -1.3 + Math.min(HM[k], 0) * ZS * .5)) : Math.max(.12, HM[k] * ZS);
+
+  // real boundaries (boundaries.json): district + talukas from OpenStreetMap, villages from the Census 2001 maps (DataMeet)
+  const BQ = BND.q, ringPts = r => { const o = []; for (let i = 0; i < r.length; i += 2) o.push([r[i] / BQ, r[i + 1] / BQ]); return o; };
+  const bboxOf = rings => { let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const r of rings) for (const [x, z] of r) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (z < z0) z0 = z; if (z > z1) z1 = z; } return { x0, x1, z0, z1 }; };
+  const DIST = BND.district.map(ringPts);
+  const TAL = BND.talukas.map(t => ({ n: t.n, rings: t.r.map(ringPts) }));
+  const VIL = BND.villages.map(v => { const rings = v.r.map(ringPts); return { n: v.n, t: v.t, rings, b: bboxOf(rings) }; });
   const ll = (lat, lon) => ({ x: (lon - meta.lonc) * meta.kmx, z: (meta.latc - lat) * meta.kmy });
   const near = (x, z) => { const i = Math.round((x - X0) / CELL), j = Math.round((z - Z0) / CELL); return Math.min(Math.max(j, 0), NY - 1) * NX + Math.min(Math.max(i, 0), NX - 1); };
   function height(x, z) {
@@ -65,7 +67,7 @@ async function init() {
 
   // district centre for the home view
   let bx0 = 1e9, bx1 = -1e9, bz0 = 1e9, bz1 = -1e9;
-  for (const ring of meta.boundary) for (const [x, z] of ring) { bx0 = Math.min(bx0, x); bx1 = Math.max(bx1, x); bz0 = Math.min(bz0, z); bz1 = Math.max(bz1, z); }
+  for (const ring of DIST) for (const [x, z] of ring) { bx0 = Math.min(bx0, x); bx1 = Math.max(bx1, x); bz0 = Math.min(bz0, z); bz1 = Math.max(bz1, z); }
   const HOME_TGT = new THREE.Vector3((bx0 + bx1) / 2 - 8, 0, (bz0 + bz1) / 2 + 24);
   const HOME_POS = HOME_TGT.clone().add(new THREE.Vector3(0, 250, 235));
 
@@ -142,7 +144,6 @@ async function init() {
     built: ['#cbbfae', '#c2b8a8', '#cfc5b6'], wet: ['#aaae8b', '#6fae94', '#94b49c'], mangr: ['#3d6a4c', '#2b6b47', '#346a4a'],
   };
   for (const k in PAL) PAL[k] = PAL[k].map(col);
-  const OUTC = col('#ebe4d4');
   const CLASS = { 10: 'tree', 20: 'shrub', 30: 'grass', 40: 'crop', 50: 'built', 90: 'wet', 95: 'mangr' };
   const kind = k => { const c = CL[k], h = HM[k]; if (isSea(k)) return 'sea'; if (c === 80 || c === 0) return 'rannW'; if (c === 60) return h < 25 ? 'rann' : 'bare'; return CLASS[c] || 'bare'; };
   const P = geo.attributes.position.array, nv = geo.attributes.position.count;
@@ -151,7 +152,7 @@ async function init() {
   for (let k = 0; k < N; k++) {
     const kd = kind(k), f = kd === 'crop' ? .88 + hash(k * .37, 1.3) * .2 : .96 + hash(k * .21, 7.1) * .07;   // farm patchwork
     for (let si = 0; si < 3; si++) {
-      tC.copy(PAL[kd][si]); if (!IN[k] && kd !== 'sea') tC.lerp(OUTC, .62);
+      tC.copy(PAL[kd][si]);
       perPoint[si].set([tC.r * f, tC.g * f, tC.b * f], k * 3);
     }
   }
@@ -161,32 +162,90 @@ async function init() {
   geo.setAttribute('color2', new THREE.BufferAttribute(perVert[1], 3));
   geo.setAttribute('color3', new THREE.BufferAttribute(perVert[2], 3));
   const seasonU = { value: new THREE.Vector3(1, 0, 0) };   // weights: summer, monsoon, winter
+  // the land is cut exactly along the OpenStreetMap district outline: a mask of the outline is tested for every pixel
+  const CB = bboxOf(DIST); CB.x0 -= 2; CB.z0 -= 2; CB.x1 += 2; CB.z1 += 2;
+  const CW = 2560, CH = Math.round(CW * (CB.z1 - CB.z0) / (CB.x1 - CB.x0)), cS = CW / (CB.x1 - CB.x0);
+  const cutTex = (() => {
+    const cv = document.createElement('canvas'); cv.width = CW; cv.height = CH;
+    const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.beginPath();
+    for (const r of DIST) { r.forEach(([x, z], i) => g[i ? 'lineTo' : 'moveTo']((x - CB.x0) * cS, (z - CB.z0) * cS)); g.closePath(); }
+    g.fill();
+    const d = g.getImageData(0, 0, CW, CH).data, a = new Uint8Array(CW * CH);
+    for (let i = 0; i < a.length; i++) a[i] = d[i * 4];
+    const t = new THREE.DataTexture(a, CW, CH, THREE.RedFormat, THREE.UnsignedByteType);
+    t.unpackAlignment = 1; t.magFilter = t.minFilter = THREE.LinearFilter; t.needsUpdate = true; return t;
+  })();
+  // project villages are painted onto the ground from a small canvas (see drawHi)
+  const HIN = 1536, hiCanvas = document.createElement('canvas'); hiCanvas.width = hiCanvas.height = HIN;
+  const hiTex = new THREE.CanvasTexture(hiCanvas); hiTex.colorSpace = THREE.SRGBColorSpace; hiTex.flipY = false; hiTex.anisotropy = 4;
+  const terrU = { uSeasonW: seasonU, uCut: { value: cutTex }, uCutBox: { value: new THREE.Vector4(CB.x0, CB.z0, 1 / (CB.x1 - CB.x0), 1 / (CB.z1 - CB.z0)) }, uHi: { value: hiTex }, uHiBox: { value: new THREE.Vector4(0, 0, 0, 0) } };
   const terrainMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 1, metalness: 0 });
-  terrainMat.onBeforeCompile = sh => {   // blend the three season palettes on the GPU
-    sh.uniforms.uSeasonW = seasonU;
-    sh.vertexShader = 'attribute vec3 color2;\nattribute vec3 color3;\nuniform vec3 uSeasonW;\n' + sh.vertexShader.replace('#include <color_vertex>', '#include <color_vertex>\n  vColor.rgb = color.rgb * uSeasonW.x + color2 * uSeasonW.y + color3 * uSeasonW.z;');
+  terrainMat.onBeforeCompile = sh => {   // blend the three season palettes on the GPU, cut to the district, paint highlights
+    Object.assign(sh.uniforms, terrU);
+    sh.vertexShader = 'attribute vec3 color2;\nattribute vec3 color3;\nuniform vec3 uSeasonW;\nvarying vec2 vXZ;\n' + sh.vertexShader
+      .replace('#include <color_vertex>', '#include <color_vertex>\n  vColor.rgb = color.rgb * uSeasonW.x + color2 * uSeasonW.y + color3 * uSeasonW.z;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\n  vXZ = position.xz;');
+    sh.fragmentShader = 'uniform sampler2D uCut;\nuniform vec4 uCutBox;\nuniform sampler2D uHi;\nuniform vec4 uHiBox;\nvarying vec2 vXZ;\n' + sh.fragmentShader
+      .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n  if (texture2D(uCut, (vXZ - uCutBox.xy) * uCutBox.zw).r < .5) discard;')
+      .replace('#include <color_fragment>', '#include <color_fragment>\n  vec2 hu = (vXZ - uHiBox.xy) * uHiBox.zw;\n  if (hu.x > 0. && hu.x < 1. && hu.y > 0. && hu.y < 1.) { vec4 hc = texture2D(uHi, hu); diffuseColor.rgb = mix(diffuseColor.rgb, hc.rgb, hc.a); }');
   };
   const terrain = new THREE.Mesh(geo, terrainMat);
   terrain.receiveShadow = true;
   scene.add(terrain);
 
-  // sea with gentle low-poly waves
-  const seaGeo = new THREE.PlaneGeometry(2400, 2400, 80, 80); seaGeo.rotateX(-Math.PI / 2); seaGeo.translate(HOME_TGT.x, -.06, HOME_TGT.z);
-  const seaMat = new THREE.MeshStandardMaterial({ color: '#3d8db7', roughness: .3, metalness: .05, flatShading: true, transparent: true, opacity: .95 });
-  const seaMesh = new THREE.Mesh(seaGeo, seaMat); scene.add(seaMesh);
-  const seaPos = seaGeo.attributes.position;
-
-  // district boundary (OpenStreetMap) as a dashed line hugging the ground
-  const bMat = new THREE.LineDashedMaterial({ color: '#d4932f', dashSize: 2.2, gapSize: 1.3 });
-  for (const ring of meta.boundary) {
-    const pts = [];
-    for (let i = 0; i < ring.length - 1; i++) {
-      const [x1, z1] = ring[i], [x2, z2] = ring[i + 1], n = Math.max(1, Math.ceil(Math.hypot(x2 - x1, z2 - z1) / 1.2));
-      for (let s = 0; s < n; s++) { const x = x1 + (x2 - x1) * s / n, z = z1 + (z2 - z1) * s / n; pts.push(new THREE.Vector3(x, Math.max(height(x, z), 0) + .4, z)); }
-    }
-    pts.push(pts[0].clone());
-    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), bMat); line.computeLineDistances(); scene.add(line);
+  // exact height of the terrain surface (the same two triangles per grid cell as the mesh), so lines lie right on it
+  function surf(x, z) {
+    const fi = Math.min(Math.max((x - X0) / CELL, 0), NX - 1.0001), fj = Math.min(Math.max((z - Z0) / CELL, 0), NY - 1.0001);
+    const i = Math.floor(fi), j = Math.floor(fj), u = fi - i, v = fj - j, k = j * NX + i;
+    return u + v <= 1 ? HY[k] + (HY[k + 1] - HY[k]) * u + (HY[k + NX] - HY[k]) * v
+      : HY[k + NX + 1] + (HY[k + NX] - HY[k + NX + 1]) * (1 - u) + (HY[k + 1] - HY[k + NX + 1]) * (1 - v);
   }
+  // drape a ring on the terrain: split every edge where it crosses a grid line or a cell diagonal -> flat [x, y, z, ...] polyline
+  function drapeRing(pts, off) {
+    const out = [], n = pts.length, ts = [];
+    const cross = (p, q) => { if (p === q) return; const lo = Math.min(p, q), hi = Math.max(p, q); for (let g = Math.floor(lo) + 1; g < hi; g++) ts.push((g - p) / (q - p)); };
+    for (let s = 0; s < n; s++) {
+      const [x1, z1] = pts[s], [x2, z2] = pts[(s + 1) % n];
+      const a1 = (x1 - X0) / CELL, b1 = (z1 - Z0) / CELL, a2 = (x2 - X0) / CELL, b2 = (z2 - Z0) / CELL;
+      ts.length = 0; ts.push(0); cross(a1, a2); cross(b1, b2); cross(a1 + b1, a2 + b2); ts.sort((p, q) => p - q);
+      for (const t of ts) { const x = x1 + (x2 - x1) * t, z = z1 + (z2 - z1) * t; out.push(x, surf(x, z) + off, z); }
+    }
+    const [x, z] = pts[0]; out.push(x, surf(x, z) + off, z);
+    return out;
+  }
+  const toSegments = (polys) => { let n = 0; for (const p of polys) n += p.length - 3; const a = new Float32Array(n * 2); let o = 0; for (const p of polys) for (let i = 0; i + 5 < p.length; i += 3) { a.set(p.subarray ? p.subarray(i, i + 6) : p.slice(i, i + 6), o); o += 6; } return a; };
+  const lineMesh = (polys, mat, order) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(toSegments(polys), 3)); const l = new THREE.LineSegments(g, mat); l.renderOrder = order; l.frustumCulled = false; scene.add(l); return l; };
+
+  // ---------------- around Kutch: open ocean out to the horizon ----------------
+  const seaMat = new THREE.MeshStandardMaterial({ color: '#3d8db7', roughness: .3, metalness: .05, flatShading: true });
+  const seaGeo = new THREE.PlaneGeometry(NX * CELL + 160, NY * CELL + 160, 110, 80); seaGeo.rotateX(-Math.PI / 2); seaGeo.translate(0, SEA_Y, 0);
+  const seaMesh = new THREE.Mesh(seaGeo, seaMat); scene.add(seaMesh);   // gentle low-poly waves near Kutch
+  const seaPos = seaGeo.attributes.position;
+  const farSea = new THREE.Mesh(new THREE.PlaneGeometry(7000, 7000).rotateX(-Math.PI / 2), seaMat);   // calm water beyond, fading into the haze
+  farSea.position.y = SEA_Y - .15; scene.add(farSea);
+
+  // the cut edge: an earth wall along the district outline, down below the water line
+  const wallP = [], wallC = [], wTop = col('#a07a52'), wBot = col('#5d4530');
+  for (const ring of DIST) {
+    const p = drapeRing(ring, 0), yb = SEA_Y - 1;
+    for (let i = 0; i + 5 < p.length; i += 3) {
+      const [ax, ay, az, bx, by, bz] = p.slice(i, i + 6);
+      wallP.push(ax, ay, az, ax, yb, az, bx, by, bz, bx, by, bz, ax, yb, az, bx, yb, bz);
+      wallC.push(...[wTop, wBot, wTop, wTop, wBot, wBot].flatMap(c => [c.r, c.g, c.b]));
+    }
+  }
+  const wallG = new THREE.BufferGeometry(); wallG.setAttribute('position', new THREE.Float32BufferAttribute(wallP, 3)); wallG.setAttribute('color', new THREE.Float32BufferAttribute(wallC, 3)); wallG.computeVertexNormals();
+  const wall = new THREE.Mesh(wallG, new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 1, flatShading: true }));
+  wall.castShadow = wall.receiveShadow = true; scene.add(wall);
+
+  // district outline (dashed), taluka boundaries, and village boundaries that appear as you zoom in
+  const bMat = new THREE.LineDashedMaterial({ color: '#d4932f', dashSize: 2.2, gapSize: 1.3 });
+  for (const ring of DIST) { const p = drapeRing(ring, .2), g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); const l = new THREE.Line(g, bMat); l.computeLineDistances(); l.renderOrder = 4; scene.add(l); }
+  const talMat = new THREE.LineBasicMaterial({ color: '#5b4a33', transparent: true, opacity: .55, depthWrite: false });
+  lineMesh(TAL.flatMap(t => t.rings.map(r => drapeRing(r, .16))), talMat, 3);
+  const vilMat = new THREE.LineBasicMaterial({ color: '#2f2c24', transparent: true, opacity: 0, depthWrite: false });
+  const vilLines = lineMesh(VIL.flatMap(v => v.rings.map(r => drapeRing(r, .12))), vilMat, 3); vilLines.visible = false;
+  const hoverMat = new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: .95, depthWrite: false, depthTest: false });
 
   // ---------------- props ----------------
   const M = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, flatShading: true, roughness: .9, ...o });
@@ -415,7 +474,7 @@ async function init() {
   const applyVO = () => { if (VO.x || VO.y) camera.setViewOffset(W.w, W.h, VO.x, VO.y, W.w, W.h); else camera.clearViewOffset(); };
   function aimVO() {
     const narrow = W.w < 760, open = cp >= 0;
-    const left = 134, right = W.w - 22 - Math.min(380, W.w - 44) - 12;   // between the month rail and the panel
+    const left = 152, right = W.w - 22 - Math.min(380, W.w - 44) - 12;   // between the month rail and the panel
     VO.tx = open && !narrow ? Math.max(0, Math.round(W.w / 2 - (left + right) / 2)) : 0; VO.ty = open && narrow ? Math.round(W.h * .26) : 0;
     VO.fw = open && !narrow ? Math.max(.3, (right - left) / W.w) : .95;
     if (REDUCE) { VO.x = VO.tx; VO.y = VO.ty; applyVO(); }
@@ -436,6 +495,72 @@ async function init() {
     const tgt = new THREE.Vector3((x0 + x1) / 2, 0, (z0 + z1) / 2), dir = horizDir(tgt);
     flyTo(tgt.clone().addScaledVector(dir, d * .685).add(new THREE.Vector3(0, d * .729, 0)), tgt);
   }
+
+  // ---------------- real village boundaries: highlights, hover names ----------------
+  const rgba = (hex, a) => { const c = col(hex); return `rgba(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)},${a})`; };
+  const areaRings = a => a ? (a.v != null ? VIL[a.v].rings : TAL[a.t].rings) : null;
+  // paint the outlines of the open program's villages (or talukas) onto the ground; focus = the selected item's area
+  function drawHi(areas, color, focus) {
+    const g = hiCanvas.getContext('2d'); g.clearRect(0, 0, HIN, HIN);
+    const list = areas.filter(Boolean);
+    if (!list.length) { terrU.uHiBox.value.set(0, 0, 0, 0); hiTex.needsUpdate = true; return; }
+    const fb = bboxOf((focus ? [focus] : list).flatMap(areaRings)), pad = focus ? 14 : 5;
+    const size = Math.max(fb.x1 - fb.x0, fb.z1 - fb.z0, 8) + pad * 2, x0 = (fb.x0 + fb.x1) / 2 - size / 2, z0 = (fb.z0 + fb.z1) / 2 - size / 2, sc = HIN / size;
+    const path = rings => { g.beginPath(); for (const r of rings) { r.forEach(([x, z], i) => g[i ? 'lineTo' : 'moveTo']((x - x0) * sc, (z - z0) * sc)); g.closePath(); } };
+    g.lineJoin = 'round';
+    for (const a of list) {
+      const on = focus && a.v === focus.v && a.t === focus.t, tal = a.t != null;
+      path(areaRings(a));
+      g.fillStyle = rgba(color, tal ? .13 : on ? .5 : .3); g.fill();
+      const w = Math.min(14, Math.max(1.6, (tal ? .3 : on ? .22 : .14) * sc));
+      if (on) { g.strokeStyle = 'rgba(255,255,255,.95)'; g.lineWidth = w * 2.2; g.stroke(); }
+      g.strokeStyle = rgba(color, .95); g.lineWidth = w; g.stroke();
+    }
+    terrU.uHiBox.value.set(x0, z0, 1 / size, 1 / size); hiTex.needsUpdate = true;
+  }
+  // which village is at (x, z)? a coarse grid of buckets keeps this fast
+  const VB = 10, vBuckets = new Map();
+  VIL.forEach((v, i) => { for (let a = Math.floor(v.b.x0 / VB); a <= Math.floor(v.b.x1 / VB); a++) for (let b = Math.floor(v.b.z0 / VB); b <= Math.floor(v.b.z1 / VB); b++) { const k = a + ',' + b; if (!vBuckets.has(k)) vBuckets.set(k, []); vBuckets.get(k).push(i); } });
+  const inRing = (x, z, r) => { let c = false; for (let i = 0, k = r.length - 1; i < r.length; k = i++) { const [xi, zi] = r[i], [xk, zk] = r[k]; if ((zi > z) !== (zk > z) && x < xi + (z - zi) * (xk - xi) / (zk - zi)) c = !c; } return c; };
+  function villageAt(x, z) {
+    for (const i of vBuckets.get(Math.floor(x / VB) + ',' + Math.floor(z / VB)) || []) { const v = VIL[i]; if (x >= v.b.x0 && x <= v.b.x1 && z >= v.b.z0 && z <= v.b.z1 && v.rings.some(r => inRing(x, z, r))) return i; }
+    return -1;
+  }
+  // where does a screen point meet the ground? march along the camera ray over the height field
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  function groundAt(cx, cy) {
+    const rc = renderer.domElement.getBoundingClientRect();
+    ndc.set((cx - rc.left) / rc.width * 2 - 1, -((cy - rc.top) / rc.height) * 2 + 1); ray.setFromCamera(ndc, camera);
+    const o = ray.ray.origin, d = ray.ray.direction; if (d.y > -.02) return null;
+    const hAt = t => Math.max(surf(o.x + d.x * t, o.z + d.z * t), SEA_Y);
+    let t = Math.max(0, (o.y - 16) / -d.y), prev = t;
+    for (let n = 0; n < 3000; n++) {
+      if (o.y + d.y * t <= hAt(t)) { let a = prev, b = t; for (let m = 0; m < 10; m++) { const c = (a + b) / 2; if (o.y + d.y * c <= hAt(c)) b = c; else a = c; } return { x: o.x + d.x * b, z: o.z + d.z * b }; }
+      prev = t; t += .35; if (o.y + d.y * t < SEA_Y - 1) return null;
+    }
+    return null;
+  }
+  const tip = q('.xtip'); let hoverV = -1, hoverLine = null, hoverEv = null, dragging = false, tipT = null;
+  function setHover(i, cx, cy) {
+    if (i !== hoverV) {
+      if (hoverLine) { scene.remove(hoverLine); hoverLine.geometry.dispose(); hoverLine = null; }
+      hoverV = i;
+      if (i >= 0) { hoverLine = lineMesh(VIL[i].rings.map(r => drapeRing(r, .25)), hoverMat, 6); tip.innerHTML = `<b>${esc(VIL[i].n)}</b><small>${esc(TAL[VIL[i].t].n)} taluka</small>`; }
+    }
+    tip.classList.toggle('show', i >= 0);
+    if (i >= 0) { const rc = stage.getBoundingClientRect(); tip.style.transform = `translate3d(${Math.round(cx - rc.left + 14)}px,${Math.round(cy - rc.top + 16)}px,0)`; }
+  }
+  const cv = renderer.domElement; let downAt = null;
+  cv.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') hoverEv = e; });
+  cv.addEventListener('pointerleave', () => { hoverEv = null; setHover(-1); });
+  cv.addEventListener('pointerdown', e => { downAt = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+  cv.addEventListener('pointerup', e => {   // a tap (no drag) on a phone shows the village name for a few seconds
+    if (e.pointerType === 'mouse' || !downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 8 || performance.now() - downAt.t > 500) return;
+    const g = groundAt(e.clientX, e.clientY); setHover(g ? villageAt(g.x, g.z) : -1, e.clientX, e.clientY);
+    clearTimeout(tipT); tipT = setTimeout(() => setHover(-1), 3500);
+  });
+  controls.addEventListener('start', () => { dragging = true; setHover(-1); });
+  controls.addEventListener('end', () => { dragging = false; });
 
   function setActive(pins) {
     for (const el of active) if (!pins.includes(el)) { el.hidden = true; el.classList.remove('on', 'pop', 'off'); }
@@ -485,7 +610,7 @@ async function init() {
     showPanel(d.color, false); markDock();
     for (const j of list) itemPins[j].style.setProperty('--c', d.color);
     itemPins.forEach(p => p.classList.remove('on'));
-    setActive(list.map(j => itemPins[j])); showMarks(d.id, d.color);
+    setActive(list.map(j => itemPins[j])); showMarks(d.id, d.color); drawHi(list.map(j => ITEMS[j].area), d.color, null);
     if (flyMode === 'fly') flyToGroup(list.length ? list.map(j => marks[j]) : [hubs[cp]]);
     history.replaceState(null, '', '#' + d.id);
     lastAct = performance.now();
@@ -502,6 +627,7 @@ async function init() {
     body.innerHTML = `<div class="xp-type"><i>${T.svg}</i>${esc(T.label)}${it.when ? `<span>· ${esc(it.when)}</span>` : ''}</div>`
       + `<h2 class="xp-title">${esc(it.title)}</h2>`
       + `<p class="xp-where"><span>${esc(placeTxt(it))}${it.approx ? ' <em>approximate location</em>' : ''}</span></p>`
+      + (it.area ? `<p class="xp-bnd"><i></i>Outlined: ${esc(it.area.v != null ? VIL[it.area.v].n + ' village boundary' : TAL[it.area.t].n + ' taluka')}</p>` : '')
       + (it.img ? `<figure class="xp-img"><img src="${esc(it.img)}" alt="${esc(it.img_alt || it.title)}"></figure>` : '')
       + `<p class="xp-text">${esc(it.text)}</p>`
       + (M ? `<button class="xp-month" type="button" style="--k:${M.color}">${CAL}<span>See Kutch in ${esc(M.name)}</span></button>` : '');
@@ -510,6 +636,7 @@ async function init() {
     q('.xp-prev').setAttribute('aria-label', 'Previous place'); q('.xp-next').setAttribute('aria-label', 'Next place');
     showPanel(d.color, true);
     itemPins.forEach((p, k) => p.classList.toggle('on', k === j));
+    drawHi(list.map(k => ITEMS[k].area), d.color, it.area);
     flyToSpot(marks[j]);
     history.replaceState(null, '', `#${d.id}/${it.id}`);
     lastAct = performance.now();
@@ -518,7 +645,7 @@ async function init() {
     cp = -1; ci = -1; list = [];
     panel.classList.remove('open', 'item'); panel.setAttribute('aria-hidden', 'true'); panel.inert = true; stage.classList.remove('pan');
     markDock(); itemPins.forEach(p => p.classList.remove('on'));
-    setActive(hubPins); showMarks(null); aimVO();
+    setActive(hubPins); showMarks(null); aimVO(); drawHi([], '#000', null);
     history.replaceState(null, '', location.pathname + location.search);
     if (reset) flyTo(HOME_POS, HOME_TGT, 1500);
   }
@@ -579,7 +706,7 @@ async function init() {
     cloud: C3(['#ffffff', '#b9c2cb', '#ffffff']), cloudA: [.5, .9, .38], cloudE: [.14, 0, .16],
     sun: C3(['#ffdcaa', '#f1f2ee', '#fff3dc']), sunI: [3, 1.7, 2.5], sunP: V3([[150, 320, 110], [170, 260, 120], [235, 150, 165]]),
     hemi: C3(['#fff1d6', '#e9eef0', '#f4f7fb']), sea: C3(['#3d8db7', '#4b8aa3', '#2c7fb4']),
-    skyT: C3(['#9cc6df', '#7f95a8', '#5fa9e6']), skyB: C3(['#f6dfb6', '#e1e6e1', '#eaf0f2']), fogN: [360, 400, 560], fogF: [1100, 1150, 1600],
+    skyT: C3(['#9cc6df', '#7f95a8', '#5fa9e6']), skyB: C3(['#d7e5e6', '#c8d5da', '#d9e8f0']), fogN: [360, 400, 560], fogF: [1100, 1150, 1600],
   };
   const tmpV = new THREE.Vector3();
   function applySeason(s) {
@@ -613,7 +740,7 @@ async function init() {
     const M = MONTHS[mIdx];
     mBox.style.setProperty('--i', mIdx);
     mBtns.forEach((b, k) => { b.setAttribute('aria-checked', k === mIdx ? 'true' : 'false'); b.tabIndex = k === mIdx ? 0 : -1; });
-    mSeason.textContent = M.season; rail.style.setProperty('--k', M.color);
+    mSeason.innerHTML = `<span class="xm-cur">${esc(M.abbr)}</span><span class="xm-dot"> · </span><span class="xm-s">${esc(M.season)}</span>`; rail.style.setProperty('--k', M.color);
     if (mode !== 'quiet') showToast(`<b>${esc(M.name)} · ${esc(M.season)}</b> – ${esc(M.text)}`, M.color);
     if (REDUCE || mode === 'quiet') { mK = 1; st = cloneSt(MP[mIdx]); applySeason(st); }
   }
@@ -634,6 +761,15 @@ async function init() {
     if (nx === null) return;
     e.preventDefault(); e.stopPropagation(); stopPlay(); setMonth(nx); mBtns[mIdx].focus();
   });
+  // the month list folds away: open by default on wide screens, closed on phones, and remembered per visitor
+  const mToggle = q('.xm-toggle');
+  function setRail(open, save) {
+    rail.classList.toggle('closed', !open); mToggle.setAttribute('aria-expanded', open ? 'true' : 'false'); mBox.inert = !open;
+    if (save) try { localStorage.setItem('x3d-months-open', open ? '1' : '0'); } catch (e) { /* storage blocked: just don't remember */ }
+  }
+  let railPref = null; try { railPref = localStorage.getItem('x3d-months-open'); } catch (e) { railPref = null; }
+  setRail(railPref ? railPref === '1' : innerWidth > 760, false);
+  mToggle.addEventListener('click', () => setRail(rail.classList.contains('closed'), true));
   setMonth(mIdx, 'quiet');   // start on this month
 
   // ---------------- size, loop ----------------
@@ -684,6 +820,8 @@ async function init() {
       el.style.zIndex = String(3000 - Math.round(o.d) + (o.on ? 800 : 0));
     }
     const camD = camera.position.distanceTo(controls.target);
+    vilMat.opacity = .42 * (1 - sstep(130, 300, camD)); vilLines.visible = vilMat.opacity > .01;
+    if (hoverEv && !dragging && !fly) { const e = hoverEv, g = groundAt(e.clientX, e.clientY); hoverEv = null; setHover(g ? villageAt(g.x, g.z) : -1, e.clientX, e.clientY); }
     for (const l of labels) {
       const p = project(l.v);
       let show = !p.behind && p.x > -80 && p.x < W.w + 80 && p.y > -20 && p.y < W.h + 20 && (l.kind === 'town' || l.kind === 'peak' ? camD < 420 : camD > 140);
@@ -726,7 +864,7 @@ async function init() {
     }
 
     if (!REDUCE) {
-      for (let i = 0; i < seaPos.count; i++) { const x = seaPos.getX(i), z = seaPos.getZ(i); seaPos.setY(i, -.06 + Math.sin(x * .09 + t * 1.1) * .05 + Math.cos(z * .07 + t * .8) * .04); }
+      for (let i = 0; i < seaPos.count; i++) { const x = seaPos.getX(i), z = seaPos.getZ(i); seaPos.setY(i, SEA_Y + Math.sin(x * .09 + t * 1.1) * .05 + Math.cos(z * .07 + t * .8) * .04); }
       seaPos.needsUpdate = true; seaGeo.computeVertexNormals();
       for (const c of clouds) { c.position.x += c.userData.v * dt; if (c.position.x > HOME_TGT.x + 320) c.position.x = HOME_TGT.x - 320; }
       for (const g of cows) g.userData.head.position.y = .95 - (Math.sin(t * 1.3 + g.userData.ph) > .6 ? .35 : 0);

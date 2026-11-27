@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generates the redesigned KFFFDT static site into ./new  (run: python3 build_new.py)."""
-import os, html
+import os, html, json
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "new")
 E = html.escape
@@ -1133,8 +1133,11 @@ for _d in X3D:
 #   short     label on the map pin (keep it under ~22 characters)
 #   place, taluka, lat, lon   village and position (approx=True shows "approximate location")
 #   when      date text, e.g. "28 March 1989" ("" if undated); month 1–12 offers "See Kutch in <month>"
+#   boundary  optional: the village outline is found from lat/lon and checked against `place`; set a Census village
+#             name (e.g. "Nagalpar Nani") if they differ, "taluka" to outline the whole taluka, or "none"
 #   text      one or two sentences;  img/img_alt, link/link_label are optional
 # Coordinates: OpenStreetMap (Nominatim). Kalara Wandh is not on OSM, so it is approximate.
+# Village outlines: Census 2001 maps (DataMeet) in new/data/boundaries.json – see data-src/make_kutch_boundaries.py.
 X3D_ITEMS = [
     dict(id="pabasari-kumbhardi", program=["jal"], type="event", short="Pabasari tank", title="Pabasari Jal Mandir revival", place="Kumbhardi", taluka="Bhachau", lat=23.343, lon=70.263,
          text="Work to deepen and clean the Pabasari tank began with support from Aarti Foundation, Setu Abhiyan and the Gram Panchayat. The idea came from the sarpanch, Devshibhai Rabari, and villagers brought their own tractors.",
@@ -1145,11 +1148,11 @@ X3D_ITEMS = [
     dict(id="piyoni", program=["water"], type="project", short="Piyoni", title="Water held at Piyoni", place="Piyoni", taluka="Abdasa", lat=23.278, lon=69.182,
          text="Part of the Trust's watershed and check-dam work: water still standing at Piyoni after the monsoon.",
          img="img/gal/watershed-02.jpg", img_alt="Piyoni after the monsoon", link="gallery.html#watershed", link_label="Watershed photos"),
-    dict(id="wasmo-abdasa", program=["drink"], type="project", short="Abdasa villages", title="Village water schemes, Abdasa", place="Villages of Abdasa taluka", taluka="Abdasa", lat=23.261, lon=68.827, approx=True,
+    dict(id="wasmo-abdasa", program=["drink"], type="project", short="Abdasa villages", title="Village water schemes, Abdasa", place="Villages of Abdasa taluka", taluka="Abdasa", lat=23.261, lon=68.827, approx=True, boundary="taluka",
          text="Under WASMO, each village water committee (pani samiti) plans, builds and runs its own drinking-water scheme, with water-quality training at committee level."),
-    dict(id="wasmo-nakhatrana", program=["drink"], type="project", short="Nakhatrana villages", title="Village water schemes, Nakhatrana", place="Villages of Nakhatrana taluka", taluka="Nakhatrana", lat=23.350, lon=69.265, approx=True,
+    dict(id="wasmo-nakhatrana", program=["drink"], type="project", short="Nakhatrana villages", title="Village water schemes, Nakhatrana", place="Villages of Nakhatrana taluka", taluka="Nakhatrana", lat=23.350, lon=69.265, approx=True, boundary="taluka",
          text="Community-managed drinking water and sanitation under WASMO, including awareness for total sanitation (Nirmal Gram)."),
-    dict(id="wasmo-lakhpat", program=["drink"], type="project", short="Lakhpat villages", title="Village water schemes, Lakhpat", place="Villages of Lakhpat taluka", taluka="Lakhpat", lat=23.635, lon=68.901, approx=True,
+    dict(id="wasmo-lakhpat", program=["drink"], type="project", short="Lakhpat villages", title="Village water schemes, Lakhpat", place="Villages of Lakhpat taluka", taluka="Lakhpat", lat=23.635, lon=68.901, approx=True, boundary="taluka",
          text="Decentralised drinking-water schemes in Lakhpat taluka, run by the village water committees, with roof-top rainwater harvesting at schools."),
     dict(id="gauchar-nani-khakhar", program=["fodder", "forest"], type="project", short="Gauchar pilot", title="Grazing-land (gauchar) pilot", place="Nani Khakhar", taluka="Mandvi", lat=22.879, lon=69.516,
          text="The village's common grazing land was prepared, sown with fodder seed by seed drill and planted with trees – a pilot for gauchar development in Kutch.",
@@ -1176,21 +1179,21 @@ X3D_ITEMS = [
          text="A native-seed distribution centre in Lakhpat taluka, in the far west of Kutch."),
     dict(id="seed-ratanpar", program=["fruit"], type="centre", short="Seed centre · Ratanpar", title="Native-seed centre, Ratanpar (Khadir)", place="Ratanpar (Khadir)", taluka="Bhachau", lat=23.860, lon=70.364,
          text="A native-seed distribution centre on Khadir island, in the middle of the Great Rann."),
-    dict(id="ksk-nani-nagalpar", program=["fruit", "animal", "centres"], type="centre", short="Wel Netrutva KSK", title="Wel Netrutva Krishi Seva Kendra", place="Nani Nagalpar", taluka="Anjar", lat=23.107, lon=69.997,
+    dict(id="ksk-nani-nagalpar", program=["fruit", "animal", "centres"], type="centre", short="Wel Netrutva KSK", title="Wel Netrutva Krishi Seva Kendra", place="Nani Nagalpar", taluka="Anjar", lat=23.107, lon=69.997, boundary="Nagalpar Nani",
          text="Field centre for farmers in Anjar taluka, with a Pashupalak Mitra animal-health centre.", link="p-agriculture-development.html", link_label="Agriculture programme"),
     dict(id="army-plantation", program=["forest"], type="project", short="With the Indian Army", title="Tree plantation with the Indian Army", place="Bhuj", taluka="Bhuj", lat=23.247, lon=69.668, approx=True,
          text="Plantation drives with the Indian Army in Bhuj, alongside community plantation and seed-ball broadcasting on open land.", link="p-agriculture-development.html", link_label="Agriculture programme"),
-    dict(id="brucellosis-mundra", program=["animal"], type="project", short="Brucellosis · Mundra", title="Brucellosis vaccination in 11 villages", place="Villages of Mundra taluka", taluka="Mundra", lat=22.839, lon=69.725, approx=True, when="Since 2012",
+    dict(id="brucellosis-mundra", program=["animal"], type="project", short="Brucellosis · Mundra", title="Brucellosis vaccination in 11 villages", place="Villages of Mundra taluka", taluka="Mundra", lat=22.839, lon=69.725, approx=True, boundary="taluka", when="Since 2012",
          text="With Adani Foundation's CSR programme and the National Dairy Development Board, dairy animals in 11 villages are vaccinated against brucellosis – more than 45,000 female animals so far.",
          img="img/updates/bhaskar-brucellosis-vaccination.jpg", img_alt="Divya Bhaskar report on the brucellosis vaccination", link="u-brucellosis-vaccination-mundra.html", link_label="Read the news report"),
     dict(id="lsc-kothara", program=["animal"], type="centre", short="Livestock centre", title="Livestock service centre, Kothara", place="Kothara", taluka="Abdasa", lat=23.130, lon=68.940,
          text="One of the Trust's three livestock service centres, with Nani Khakhar and Ratanpar (Khadir)."),
     dict(id="khadir-kendra", program=["animal", "centres"], type="centre", short="Khadir Vistar Vikas Kendra", title="Khadir Vistar Vikas Kendra", place="Ratanpar (Khadir)", taluka="Bhachau", lat=23.860, lon=70.364,
          text="Field centre for the Khadir area in the Great Rann, with one of the Trust's three livestock service centres."),
-    dict(id="earthquake-2001", program=["rebuild"], type="event", short="Rebuilt village", title="Rebuilding after the earthquake", place="A village in Kutch (location to be confirmed)", taluka="", lat=23.17, lon=70.12, approx=True, when="From 26 January 2001", month=1,
+    dict(id="earthquake-2001", program=["rebuild"], type="event", short="Rebuilt village", title="Rebuilding after the earthquake", place="A village in Kutch (location to be confirmed)", taluka="", lat=23.17, lon=70.12, approx=True, boundary="none", when="From 26 January 2001", month=1,
          text="Relief materials, a survey of damaged houses and temporary shelters came first; then, with Castrol India, 134 permanent houses, a primary school, community centre, drinking-water scheme, full sanitation and solar street lights.",
          link="p-natural-disaster-management.html", link_label="Disaster management"),
-    dict(id="van-shala", program=["school"], type="project", short="Van Shala", title="Van Shala, Kalara Wandh", place="Kalara Wandh", taluka="Lakhpat", lat=23.66, lon=68.86, approx=True,
+    dict(id="van-shala", program=["school"], type="project", short="Van Shala", title="Van Shala, Kalara Wandh", place="Kalara Wandh", taluka="Lakhpat", lat=23.66, lon=68.86, approx=True, boundary="none",
          text="A forest school (Van Shala) that brings primary education to children at Kalara Wandh; the Trust works as its support agency.",
          img="img/gal/edu-02.jpg", img_alt="Van Shala classroom", link="p-primary-education-for-unreached-community.html", link_label="Education programme"),
     dict(id="agariya-shala", program=["school"], type="project", short="Agariya Shala", title="Agariya Shala, Kadol", place="Kadol", taluka="Bhachau", lat=23.473, lon=70.292,
@@ -1201,6 +1204,50 @@ X3D_ITEMS = [
          text="The Trust was registered on 28 March 1989 at village Kothara in Abdasa taluka, where its registered office still is.", link="about.html", link_label="About the Trust"),
 ]
 X3D_TYPES = {"project": "Project", "event": "Event", "centre": "Centre"}
+
+
+def _x3d_areas():
+    """Match each item to its real outline in new/data/boundaries.json: {"v": village index} or {"t": taluka index}."""
+    import os, re
+    here = os.path.join(os.path.dirname(os.path.abspath(__file__)), "new", "data")
+    B, M = json.load(open(os.path.join(here, "boundaries.json"))), json.load(open(os.path.join(here, "kutch.json")))
+    q, V, T = B["q"], B["villages"], B["talukas"]
+    tal = {t["n"].lower(): i for i, t in enumerate(T)}
+    def inside(x, z, r):
+        c, n = False, len(r) // 2
+        for i in range(n):
+            x1, z1, x2, z2 = r[2 * i], r[2 * i + 1], r[2 * ((i + 1) % n)], r[2 * ((i + 1) % n) + 1]
+            if (z1 > z) != (z2 > z) and x < x1 + (z - z1) * (x2 - x1) / (z2 - z1): c = not c
+        return c
+    def words(t): return set(re.sub(r"\(.*?\)|[^a-z ]", " ", t.lower()).split())
+    out = {}
+    for it in X3D_ITEMS:
+        b, where = it.get("boundary"), "X3D_ITEMS[%s]" % it["id"]
+        if b == "none": out[it["id"]] = None; continue
+        if b == "taluka":
+            assert it.get("taluka", "").lower() in tal, where + ": unknown taluka for boundary=\"taluka\""
+            out[it["id"]] = {"t": tal[it["taluka"].lower()]}; continue
+        x, z = (it["lon"] - M["lonc"]) * M["kmx"] * q, (M["latc"] - it["lat"]) * M["kmy"] * q
+        if b:
+            hits = [i for i, v in enumerate(V) if v["n"].lower() == b.lower() and (not it.get("taluka") or T[v["t"]]["n"].lower() == it["taluka"].lower())]
+            assert len(hits) == 1, where + ": no single Census village called " + b
+            vi = hits[0]
+            if not any(inside(x, z, r) for r in V[vi]["r"]):   # move the pin inside its real village
+                r = max(V[vi]["r"], key=len); xs, zs = r[0::2], r[1::2]
+                cz = (min(zs) + max(zs)) / 2; cuts = []
+                for i in range(len(xs)):
+                    x1, z1, x2, z2 = xs[i], zs[i], xs[(i + 1) % len(xs)], zs[(i + 1) % len(xs)]
+                    if (z1 > cz) != (z2 > cz): cuts.append(x1 + (cz - z1) * (x2 - x1) / (z2 - z1))
+                cuts.sort(); x, z = (cuts[0] + cuts[1]) / 2, cz
+                it["lon"], it["lat"] = round(x / q / M["kmx"] + M["lonc"], 4), round(M["latc"] - z / q / M["kmy"], 4)
+        else:
+            hits = [i for i, v in enumerate(V) if any(inside(x, z, r) for r in v["r"])]
+            vi = hits[0] if hits else None
+            if vi is None or not words(V[vi]["n"]) <= words(it["place"]):
+                print("  note: %s – no matching village outline (%s); set boundary= to choose one" % (where, V[vi]["n"] if vi is not None else "outside all villages"))
+                out[it["id"]] = None; continue
+        out[it["id"]] = {"v": vi}
+    return out
 
 
 def _check_x3d():
@@ -1234,7 +1281,7 @@ X3D_MONTHS = [
 ]
 
 X3D_CSS = """
-.x3d{--hh:67px;position:relative;height:calc(100svh - var(--hh));min-height:520px;overflow:hidden;background:linear-gradient(#b9d6ea,#f3e4c4 70%);isolation:isolate}
+.x3d{--hh:67px;position:relative;height:calc(100svh - var(--hh));min-height:520px;overflow:hidden;background:linear-gradient(#b9d6ea,#cfe3ea 70%);isolation:isolate}
 .x3d>canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;touch-action:none;outline:none}
 .xg{background:rgba(255,252,244,.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 22px 50px -22px rgba(25,45,30,.5)}
 .xtitle{position:absolute;left:22px;top:22px;z-index:6;max-width:330px;padding:16px 20px;border-radius:24px}
@@ -1250,6 +1297,7 @@ X3D_CSS = """
 .xlab.water{font:italic 500 .92rem/1 Inter,sans-serif;letter-spacing:.06em;color:rgba(255,255,255,.88);translate:-50% -50%;text-shadow:0 1px 4px rgba(10,50,80,.45)}
 .xlegend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:.73rem;color:#4c584d}.xlegend span{display:inline-flex;align-items:center;gap:5px}
 .xlegend i{width:11px;height:11px;border-radius:3px;background:var(--s);border:1px solid rgba(0,0,0,.14)}.xlegend .bd i{width:16px;height:0;border:0;border-top:2px dashed #d4932f;border-radius:0}
+.xlegend .tb i,.xlegend .vb i{width:16px;height:0;border:0;border-radius:0;border-top:1.5px solid rgba(91,74,51,.75)}.xlegend .vb i{border-top:1px solid rgba(47,44,36,.5)}
 .xcred{margin-top:9px;font-size:.64rem;line-height:1.4;color:#6b766c}.xtitle.mini .xlegend{display:none}.xtitle.mini .xcred{margin-top:4px}
 .xpin{position:absolute;left:0;top:0;pointer-events:auto;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:99px;border:1px solid rgba(255,255,255,.75);background:rgba(255,252,244,.74);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font:600 .8rem/1 Inter,sans-serif;color:var(--ink);white-space:nowrap;cursor:pointer;transform-origin:50% 100%;box-shadow:0 10px 24px -12px rgba(0,0,0,.45);transition:opacity .3s,background .3s,box-shadow .3s;will-change:transform}
 .xpin[hidden]{display:none}
@@ -1278,6 +1326,9 @@ X3D_CSS = """
 .xp-where{position:relative;display:flex;gap:8px;align-items:flex-start;margin:-4px 0 12px;font-size:.84rem;line-height:1.4;color:#4c584d}
 .xp-where:before{content:"";flex:none;width:9px;height:9px;margin-top:4px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c)}
 .xp-where em{font-style:normal;font-size:.72rem;padding:1px 8px;border-radius:99px;background:rgba(0,0,0,.06);white-space:nowrap}
+.xp-bnd{display:flex;align-items:center;gap:8px;margin:-6px 0 12px;font-size:.78rem;color:#5d6a5e}.xp-bnd i{flex:none;width:16px;height:11px;border-radius:3px;border:2px solid var(--c);background:color-mix(in srgb,var(--c) 30%,transparent)}
+.xtip{position:absolute;left:0;top:0;z-index:5;pointer-events:none;padding:7px 12px;border-radius:12px;opacity:0;transition:opacity .2s;white-space:nowrap;font:700 .8rem/1.25 Inter,sans-serif;color:var(--ink)}
+.xtip.show{opacity:1}.xtip b{display:block}.xtip small{display:block;font-weight:500;font-size:.72rem;color:#5d6a5e}
 .xp-stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85)}
 .xp-stat b{font:700 2rem/1 Fraunces,serif;color:color-mix(in srgb,var(--c) 75%,#1d2a1f)}.xp-stat span{flex:1;min-width:140px;font-size:.86rem;color:#4c584d}
 .xp-text{font-size:.92rem;line-height:1.55;color:#3d4a3f;margin:14px 0}
@@ -1309,10 +1360,16 @@ X3D_CSS = """
 .xd-tour,.xd-reset{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;border:0;border-radius:18px;background:rgba(255,255,255,.5);font:600 .82rem Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
 .xd-tour:hover,.xd-reset:hover{background:#fff}.xd-tour svg,.xd-reset svg{width:16px;height:16px}
 .xd-tour[aria-pressed=true]{background:var(--green);color:#fff}
-.xmonths{position:absolute;left:22px;bottom:104px;z-index:6;width:102px;padding:8px;border-radius:22px;transition:opacity .35s}
-.xm-head{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:4px;padding:2px 2px 8px 8px}
-.xm-lab{font:700 .6rem/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#6b766c}
-.xm-season{grid-column:1/-1;margin-top:3px;font:700 .82rem/1.15 Inter,sans-serif;color:color-mix(in srgb,var(--k) 72%,#1d2a1f);transition:color .4s}
+.xmonths{position:absolute;left:22px;bottom:104px;z-index:6;width:120px;padding:8px;border-radius:22px;transition:opacity .35s}
+.xm-head{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:2px;padding:0 0 6px}.xmonths.closed .xm-head{padding:0 0 3px}
+.xm-toggle{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:7px 5px 7px 8px;border:0;border-radius:13px;background:none;text-align:left;color:inherit;cursor:pointer;transition:background .2s}
+.xm-toggle:hover{background:rgba(255,255,255,.55)}.xm-toggle:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+.xm-toggle svg{flex:none;width:15px;height:15px;color:#4c584d;transition:transform .35s cubic-bezier(.2,.8,.2,1)}.xmonths.closed .xm-toggle svg{transform:rotate(180deg)}
+.xm-wrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1)}.xmonths.closed .xm-wrap{grid-template-rows:0fr}
+.xm-wrap>.xm-list{min-height:0;overflow:hidden}
+.xmonths:not(.closed) .xm-cur,.xmonths:not(.closed) .xm-dot{display:none}
+.xm-lab{font:700 .6rem/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#6b766c}
+.xm-season{grid-column:1/-1;margin-top:1px;padding:0 8px;font:700 .82rem/1.15 Inter,sans-serif;color:color-mix(in srgb,var(--k) 72%,#1d2a1f);transition:color .4s}
 .xm-play{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.7);display:grid;place-items:center;color:var(--ink);cursor:pointer}.xm-play:hover{background:#fff}.xm-play svg{width:13px;height:13px}
 .xm-play[aria-pressed=true]{background:var(--green);color:#fff}
 .xm-list{position:relative;display:flex;flex-direction:column}
@@ -1323,7 +1380,7 @@ X3D_CSS = """
 .xm-list button:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
 .xtoast{position:absolute;left:50%;top:22px;z-index:8;transform:translate(-50%,-14px);opacity:0;padding:10px 18px;border-radius:22px;font-weight:600;font-size:.88rem;line-height:1.4;color:var(--ink);pointer-events:none;transition:opacity .4s,transform .5s cubic-bezier(.2,.8,.2,1);max-width:min(560px,calc(100% - 40px));text-align:center}
 .xtoast.show{opacity:1;transform:translate(-50%,0)}.xtoast b{color:color-mix(in srgb,var(--k,#2e5b3b) 75%,#1d2a1f)}
-.xload{position:absolute;inset:0;z-index:9;display:grid;place-content:center;justify-items:center;gap:14px;background:linear-gradient(#b9d6ea,#f3e4c4 70%);color:var(--green);font-weight:600;transition:opacity .9s,visibility 0s .9s}
+.xload{position:absolute;inset:0;z-index:9;display:grid;place-content:center;justify-items:center;gap:14px;background:linear-gradient(#b9d6ea,#cfe3ea 70%);color:var(--green);font-weight:600;transition:opacity .9s,visibility 0s .9s}
 .x3d.ready .xload{opacity:0;visibility:hidden}.xl-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(46,91,59,.2);border-top-color:var(--green);animation:spin 1s linear infinite}
 .xfall{display:none}
 .x3d.nogl{height:auto;min-height:0;background:var(--sand2)}.x3d.nogl>:not(.xfall){display:none!important}
@@ -1343,23 +1400,25 @@ X3D_CSS = """
 .xdock{left:10px;right:10px;bottom:10px;transform:none;max-width:none;width:auto}.xd-places{flex:1}
 .xd-places button{width:62px;font-size:.64rem}.xd-places em{left:calc(50% + 7px)}.xd-tour span{display:none}.xd-tour,.xd-reset{padding:0 10px}
 .xmonths{left:auto;right:8px;bottom:auto;top:50%;transform:translateY(-42%);width:auto;padding:5px;border-radius:18px}
-.xm-head{display:flex;justify-content:center;padding:1px 0 5px}.xm-lab,.xm-season{display:none}.xm-play{width:28px;height:28px}
+.xm-head{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 0 4px}.xm-toggle{justify-content:center;padding:5px}.xm-season{order:1;padding:0}.xm-play{order:2}.xm-lab,.xm-season .xm-s,.xm-season .xm-dot{display:none}
+.xmonths:not(.closed) .xm-cur{display:inline}.xm-season{margin:0;font-size:.68rem}.xm-play{width:28px;height:28px}
 .xm-list button{height:25px;gap:5px;padding:0 8px 0 6px;font-size:.68rem}.xm-list button:before{width:3px;height:10px}.xm-list button[aria-checked=true]:before{height:13px}
 .x3d.pan .xmonths{opacity:0;pointer-events:none}
 .xtoast{top:auto;bottom:100px}
 }
-@media(prefers-reduced-motion:reduce){.xpanel,.xp-in,.xtoast,.xm-glide{transition:none}.xl-ring{animation:none}.xpin.pop{animation:none}}
+@media(prefers-reduced-motion:reduce){.xpanel,.xp-in,.xtoast,.xm-glide,.xm-wrap,.xm-toggle svg{transition:none}.xl-ring{animation:none}.xpin.pop{animation:none}}
 """
 
 
 def explore_body():
     import json
     _check_x3d()
+    areas = _x3d_areas()
     n = {d["id"]: sum(d["id"] in it["program"] for it in X3D_ITEMS) for d in X3D}
     places = "".join('<button type="button" style="--c:%s" aria-current="false" aria-label="%s – %d on the map"><i>%s</i><span>%s</span><em aria-hidden="true">%d</em></button>'
                      % (d["color"], E(d["kick"]), n[d["id"]], X3D_SVG(d["icon"]), E(d["short"]), n[d["id"]]) for d in X3D)
     data = dict(programs=[dict(d, svg=X3D_SVG(d["icon"]), n=n[d["id"]]) for d in X3D],
-                items=[dict(dict(approx=False, when="", month=0, taluka="", img="", img_alt="", link="", link_label=""), **it) for it in X3D_ITEMS],
+                items=[dict(dict(approx=False, when="", month=0, taluka="", img="", img_alt="", link="", link_label=""), **it, area=areas[it["id"]]) for it in X3D_ITEMS],
                 types={k: dict(label=v, svg=X3D_SVG("t-" + k)) for k, v in X3D_TYPES.items()},
                 months=[dict(name=m, abbr=a, season=s, color=X3D_SEASON[s], text=t) for m, a, s, t in X3D_MONTHS])
     data = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
@@ -1376,17 +1435,18 @@ def explore_body():
     return ('<div class="x3d" id="x3d">'
             '<div class="xlabels" aria-hidden="true"></div><div class="xpins" aria-hidden="true"></div>'
             '<div class="xtitle xg"><div class="kick">Explore in 3D</div><h1>Kutch, up close</h1><p>The real shape of Kutch, from satellite data. Drag to look around and scroll or pinch to zoom. Pick a program to see its projects and events on the map, and a month to see the season.</p>'
-            '<div class="xlegend"><span style="--s:#efece4"><i></i>Salt Rann</span><span style="--s:#cfae74"><i></i>Farmland</span><span style="--s:#a99a5e"><i></i>Scrub</span><span style="--s:#8fc2d6"><i></i>Wetland</span><span style="--s:#cbbfae"><i></i>Towns</span><span class="bd"><i></i>District boundary</span></div>'
-            '<div class="xcred">Terrain: NASA SRTM (AWS Terrain Tiles) · Land cover: ESA WorldCover 2021, CC BY 4.0 · Boundary and village positions © OpenStreetMap contributors · Heights ×32</div></div>'
-            '<div class="xtoast xg" role="status"></div>'
+            '<div class="xlegend"><span style="--s:#efece4"><i></i>Salt Rann</span><span style="--s:#cfae74"><i></i>Farmland</span><span style="--s:#a99a5e"><i></i>Scrub</span><span style="--s:#8fc2d6"><i></i>Wetland</span><span style="--s:#cbbfae"><i></i>Towns</span><span class="bd"><i></i>District boundary</span><span class="tb"><i></i>Taluka</span><span class="vb"><i></i>Village (zoom in)</span></div>'
+            '<div class="xcred">Terrain: NASA SRTM (AWS Terrain Tiles) · Land cover: ESA WorldCover 2021, CC BY 4.0 · District, taluka boundaries and village positions © OpenStreetMap contributors · Village boundaries: Census of India 2001 via DataMeet (ODbL) · Heights ×32</div></div>'
+            '<div class="xtoast xg" role="status"></div><div class="xtip xg" aria-hidden="true"></div>'
             '<aside class="xpanel" aria-hidden="true" aria-label="Details"><div class="xp-in xg">'
             '<div class="xp-top"><button class="xp-back" type="button">' + back + '<span></span></button><span class="xp-kick"></span><span class="xp-count"></span><button class="xp-x" type="button" aria-label="Close">×</button></div>'
             '<div class="xp-body"></div>'
             '<div class="xp-act"><a class="xp-go" href="#"></a><button class="xp-prev" type="button" aria-label="Previous">←</button><button class="xp-next" type="button">Next →</button></div>'
             '</div></aside>'
-            '<div class="xmonths xg"><div class="xm-head"><span class="xm-lab">Month</span>'
-            '<button class="xm-play" type="button" aria-pressed="false" aria-label="Play the year, month by month" title="Play the year">' + play + '</button><b class="xm-season"></b></div>'
-            '<div class="xm-list" role="radiogroup" aria-label="Month shown on the map" style="--i:0"><span class="xm-glide"></span>' + months + '</div></div>'
+            '<div class="xmonths xg"><div class="xm-head"><button class="xm-toggle" type="button" aria-expanded="true" aria-controls="xm-list" title="Show or hide the months">'
+            '<span class="xm-lab">Month</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>'
+            '<button class="xm-play" type="button" aria-pressed="false" aria-label="Play the year, month by month" title="Play the year">' + play + '</button><b class="xm-season"></b></div><div class="xm-wrap">'
+            '<div class="xm-list" id="xm-list" role="radiogroup" aria-label="Month shown on the map" style="--i:0"><span class="xm-glide"></span>' + months + '</div></div></div>'
             '<div class="xdock xg" role="toolbar" aria-label="Programs and view controls"><div class="xd-places">' + places + '</div><span class="xd-sep"></span>'
             '<button class="xd-tour" type="button" aria-pressed="false">' + play + '<span>Tour</span></button>'
             '<button class="xd-reset" type="button" aria-label="Show all programs" title="Show all programs">' + reset + '</button></div>'
@@ -1402,9 +1462,9 @@ def explore_body():
 
 
 X3D_TEASER = ('<section class="xteaser"><div class="wrap split"><div class="reveal"><div class="kick">New · Explore in 3D</div><h2>Step into Kutch</h2>'
-              '<p>Fly over the real shape of Kutch – built from satellite terrain and land-cover data – from the white salt Rann and Banni grassland to the Gulf coast. '
+              '<p>Fly over the real shape of Kutch – built from satellite terrain and land-cover data – cut to its official district outline and showing every village boundary – from the white salt Rann and Banni grassland to the Gulf coast. '
               'Pick a program to see its projects, events and centres where the work happens, and step through the year month by month: the Rann floods, then dries to white salt, and the tanks fill and run low.</p>'
-              '<div class="xt-tags"><span>Real terrain &amp; land cover</span><span>%d programs · %d places</span><span>Month by month</span></div>'
+              '<div class="xt-tags"><span>Real terrain &amp; land cover</span><span>Real village boundaries</span><span>%d programs · %d places</span><span>Month by month</span></div>'
               '<a class="btn" href="explore.html">Explore in 3D →</a></div>'
               '<div class="reveal"><a class="xt-img" href="explore.html"><img src="img/explore-poster.jpg" alt="3D view of Kutch built from real terrain data, with program pins" loading="lazy"></a></div></div></section>') % (len(X3D), len(X3D_ITEMS))
 

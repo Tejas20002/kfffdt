@@ -9,3 +9,4 @@ video-src/*.mp4
 
 # original site video (82 MB): the mirror plays it from kfffdt.org.in instead
 original/wp-content/uploads/2024/12/Lok-Shakti-Jal-Mandir-29-09-2023.mp4
+__pycache__/

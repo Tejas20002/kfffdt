@@ -6,7 +6,11 @@ Live preview (GitHub Pages): https://tejas20002.github.io/kfffdt/
 - `original/`   – offline mirror of the 14 real pages (WordPress/Elementor output, static)
 - `new/`        – redesigned static site (plain HTML/CSS, no CMS)
 - `build_new.py` – generates `new/*.html`; edit content/styles there, then `python3 build_new.py`
-- `new/js/explore.js` – the "Explore in 3D" page (three.js scene + glass UI); program pins and text live in `X3D` in `build_new.py`
+- `new/js/explore.js` – the "Explore in 3D" page (three.js scene + glass UI). Its content lives in `build_new.py`:
+  `X3D` = the programs (one pin each), `X3D_ITEMS` = projects, events and centres (shown only after a program is picked),
+  `X3D_MONTHS` = the month-by-month season notes. To add a project or event, copy an entry in `X3D_ITEMS`
+  (the comment above it lists the fields) and run `python3 build_new.py` – the build stops with a message if an id,
+  program, position or image is wrong. Deep links: `explore.html#fruit` or `explore.html#fruit/beej-rath`.
 - `new/vendor/three/` – three.js r187 (MIT), served from the site itself, no CDN
 - `new/data/kutch.bin` + `kutch.json` – the real Kutch ground for the 3D page (1.6 km grid: height, land cover, inside-district flag).
   Rebuild with `python3 -I data-src/make_kutch_terrain.py <cache-dir> new/data`.

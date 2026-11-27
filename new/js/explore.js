@@ -1,12 +1,15 @@
 // Explore Kutch in 3D – the real shape of Kutch with the Trust's programs as spatial pins.
+// Pick a program and only its projects, events and centres appear; pick a month and the land changes with the season.
 // Ground: data/kutch.bin + data/kutch.json, built by data-src/make_kutch_terrain.py from NASA SRTM heights
 // (AWS Terrain Tiles), ESA WorldCover 2021 land cover and the OpenStreetMap district boundary.
-// 1 scene unit = 1 km; heights are exaggerated so the low hills read. Program data comes from #x3d-data.
+// 1 scene unit = 1 km; heights are exaggerated so the low hills read. Programs, items and months come from #x3d-data
+// (X3D, X3D_ITEMS and X3D_MONTHS in build_new.py).
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const stage = document.getElementById('x3d');
 const DATA = JSON.parse(document.getElementById('x3d-data').textContent);
+const PROG = DATA.programs, ITEMS = DATA.items, TYPES = DATA.types, MONTHS = DATA.months;
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const q = s => stage.querySelector(s);
 
@@ -58,7 +61,7 @@ async function init() {
     return HY[k] * (1 - u) * (1 - v) + HY[k + 1] * u * (1 - v) + HY[k + NX] * (1 - u) * v + HY[k + NX + 1] * u * v;
   }
   const landAt = (x, z) => { const k = near(x, z); return IN[k] === 1 && !isSea(k) && CL[k] !== 80; };
-  const S = Object.fromEntries(DATA.map(d => { const p = ll(d.lat, d.lon); return [d.id, { d, x: p.x, z: p.z }]; }));
+  const S = Object.fromEntries(PROG.map(d => { const p = ll(d.lat, d.lon); return [d.id, { d, x: p.x, z: p.z }]; }));
 
   // district centre for the home view
   let bx0 = 1e9, bx1 = -1e9, bz0 = 1e9, bz1 = -1e9;
@@ -75,7 +78,7 @@ async function init() {
   renderer.setClearColor('#cfe0e6');
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.domElement.setAttribute('aria-label', '3D view of Kutch built from real terrain and land-cover data. Use the buttons below to visit each program.');
+  renderer.domElement.setAttribute('aria-label', '3D view of Kutch built from real terrain and land-cover data. Use the program buttons below and the month list on the side to explore.');
   renderer.domElement.setAttribute('role', 'img');
   stage.prepend(renderer.domElement);
 
@@ -306,7 +309,7 @@ async function init() {
   // orchard near the fruit hotspot; fruit appears after the rains
   const orch = [], fruits = [];
   for (let r = 0; r < 4; r++) for (let c = 0; c < 5; c++) {
-    const x = S.fruit.x - 3 + c * 2.4, z = S.fruit.z + 2 + r * 2.3;
+    const x = S.fruit.x - 3 + c * 2.4, z = S.fruit.z - 2 - r * 2.3;   // north of the hub, away from the coast
     if (!landAt(x, z)) continue;
     const y = height(x, z) - .05; orch.push({ x, z, y, s: .6 });
     for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2 + r; fruits.push({ x: x + Math.cos(a) * .55, z: z + Math.sin(a) * .55, y: y + 1.1 + R() * .55 }); }
@@ -338,18 +341,19 @@ async function init() {
     g.add(l); g.position.set(bn.x + (f - 1) * 6, 15 + f * 2.5, bn.z + (f - 1) * 4); g.rotation.y = f * 2.1; g.visible = false; g.userData.v = .22 + f * .07; scene.add(g); return g;
   });
 
-  // rain (only while the monsoon arrives)
+  // rain showers in the rainy months
   const DROPS = 2600, rainPos = new Float32Array(DROPS * 6);
   for (let i = 0; i < DROPS; i++) { const x = HOME_TGT.x + (R() - .5) * 460, y = R() * 140, z = HOME_TGT.z + (R() - .5) * 330; rainPos.set([x, y, z, x + .3, y + 2.4, z], i * 6); }
   const rainGeo = new THREE.BufferGeometry(); rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
   const rainMat = new THREE.LineBasicMaterial({ color: '#e3f1fb', transparent: true, opacity: 0, depthWrite: false });
   const rain = new THREE.LineSegments(rainGeo, rainMat); rain.visible = false; rain.frustumCulled = false; scene.add(rain);
 
-  // hotspot anchors: ground ring + light beam + floating gem
+  // ---------------- markers ----------------
+  // program hubs: ground ring + light beam + floating gem (shown while no program is open)
   const ringG = new THREE.RingGeometry(2.4, 3, 48); ringG.rotateX(-Math.PI / 2);
   const beamG = new THREE.CylinderGeometry(.07, .07, 8, 6); beamG.translate(0, 4, 0);
   const gemG = new THREE.OctahedronGeometry(.95, 0);
-  const spots = DATA.map(d => {
+  const hubs = PROG.map(d => {
     const s = S[d.id], y = Math.max(height(s.x, s.z), .3);
     const ring = new THREE.Mesh(ringG, new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: .85, depthWrite: false, side: THREE.DoubleSide }));
     ring.position.set(s.x, y + .3, s.z);
@@ -358,75 +362,173 @@ async function init() {
     const gem = new THREE.Mesh(gemG, new THREE.MeshStandardMaterial({ color: d.color, emissive: d.color, emissiveIntensity: .45, flatShading: true, roughness: .4 }));
     gem.position.set(s.x, y + 9, s.z); gem.castShadow = true;
     scene.add(ring, beam, gem);
-    return { d, x: s.x, z: s.z, ring, gem, y, anchor: new THREE.Vector3(s.x, y + 11.2, s.z) };
+    return { d, x: s.x, z: s.z, y, ring, beam, gem, anchor: new THREE.Vector3(s.x, y + 11.2, s.z) };
+  });
+  // projects, events and centres: a small ring and beam each, shown only for the open program
+  const iRingG = new THREE.RingGeometry(1.1, 1.5, 36); iRingG.rotateX(-Math.PI / 2);
+  const iDotG = new THREE.CircleGeometry(.6, 20); iDotG.rotateX(-Math.PI / 2);
+  const iBeamG = new THREE.CylinderGeometry(.05, .05, 5, 5); iBeamG.translate(0, 2.5, 0);
+  const iBeamM = new THREE.MeshBasicMaterial({ color: '#fff6df', transparent: true, opacity: .6, depthWrite: false });
+  const marks = ITEMS.map(it => {
+    const p = ll(it.lat, it.lon), y = Math.max(height(p.x, p.z), .3);
+    const ring = new THREE.Mesh(iRingG, new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: .9, depthWrite: false, side: THREE.DoubleSide }));
+    const dot = new THREE.Mesh(iDotG, new THREE.MeshBasicMaterial({ color: '#ffffff', depthWrite: false, side: THREE.DoubleSide }));
+    ring.position.y = .3; dot.position.y = .26;
+    const g = new THREE.Group(); g.add(ring, dot, new THREE.Mesh(iBeamG, iBeamM)); g.position.set(p.x, y, p.z); g.visible = false; scene.add(g);
+    return { it, x: p.x, z: p.z, y, g, ring, dot, anchor: new THREE.Vector3(p.x, y + 5.6, p.z) };
   });
 
   // ---------------- spatial UI ----------------
-  const pinLayer = q('.xpins'), labLayer = q('.xlabels'), panel = q('.xpanel'), toast = q('.xtoast');
+  const pinLayer = q('.xpins'), labLayer = q('.xlabels'), panel = q('.xpanel'), toast = q('.xtoast'), body = q('.xp-body');
   const dockBtns = [...stage.querySelectorAll('.xd-places button')];
-  const pins = DATA.map((d, i) => {
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  function mkPin(cls, color, svg, label, badge, aria, onClick) {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'xpin'; b.tabIndex = -1; b.style.setProperty('--c', d.color);
-    b.innerHTML = `<i>${d.svg}</i><span>${d.short}</span>`;
-    b.setAttribute('aria-label', d.title);
-    b.addEventListener('click', () => { tour(false); open(i); });
+    b.type = 'button'; b.className = cls; b.tabIndex = -1; b.style.setProperty('--c', color);
+    b.innerHTML = `<i>${svg}</i><span>${esc(label)}</span>` + (badge != null ? `<em>${badge}</em>` : '');
+    b.setAttribute('aria-label', aria);
+    b.addEventListener('click', onClick);
     pinLayer.appendChild(b); return b;
-  });
+  }
+  const hubPins = PROG.map((d, i) => { const el = mkPin('xpin', d.color, d.svg, d.short, d.n, `${d.kick} – ${d.n} on the map`, () => { tour(false); openProg(i); }); el._a = hubs[i].anchor; return el; });
+  const itemPins = ITEMS.map((it, j) => { const el = mkPin('xpin xi', '#2e5b3b', TYPES[it.type].svg, it.short, null, it.title, () => { tour(false); openItem(j); }); el._a = marks[j].anchor; el._item = true; el.hidden = true; return el; });
+  let active = hubPins.slice();
   const labels = meta.places.concat([{ name: 'Dhordo', kind: 'town', ...ll(23.833, 69.644) }]).map(p => {
     const el = document.createElement('div'); el.className = 'xlab ' + p.kind; el.textContent = p.name; labLayer.appendChild(el);
     const y = p.kind === 'water' || p.kind === 'region' ? 1 : Math.max(height(p.x, p.z), .2) + (p.kind === 'peak' ? 1.4 : .5);
     return { el, kind: p.kind, v: new THREE.Vector3(p.x, y, p.z) };
   });
-  dockBtns.forEach((b, i) => b.addEventListener('click', () => { tour(false); open(i); }));
+  dockBtns.forEach((b, i) => b.addEventListener('click', () => { tour(false); openProg(i); }));
 
-  let cur = -1, fly = null, lastAct = performance.now(), introDone = REDUCE;
+  let cp = -1, ci = -1, list = [], fly = null, lastAct = performance.now(), introDone = REDUCE;
+  const inProg = (it, pid) => it.program.includes(pid);
+  const placeTxt = it => it.place + (it.taluka && !it.place.includes(it.taluka) ? `, ${it.taluka} taluka` : '');
   const mini = () => q('.xtitle').classList.add('mini');
   setTimeout(mini, 9000);
+
   function flyTo(p, t, dur = 1700) {
     fly = { p0: camera.position.clone(), p1: p.clone(), t0: controls.target.clone(), t1: t.clone(), dur: REDUCE ? 1 : dur, start: performance.now() };
     controls.enabled = false;
   }
-  function flyToSpot(s) {
-    const t = new THREE.Vector3(s.x, s.y + 2, s.z);
-    const dir = new THREE.Vector3(camera.position.x - t.x, 0, camera.position.z - t.z);
-    if (dir.lengthSq() < 1) dir.set(0, 0, 1);
-    dir.normalize();
-    const narrow = stage.clientWidth < 760;
-    flyTo(t.clone().add(dir.multiplyScalar(narrow ? 48 : 38)).add(new THREE.Vector3(0, narrow ? 34 : 27, 0)), t.clone().add(new THREE.Vector3(0, narrow ? -4 : 0, 0)));
+  // keep the scene's centre in the free area beside (desktop) or above (phone) the panel by offsetting the projection
+  const VO = { x: 0, y: 0, tx: 0, ty: 0, fw: .95 };
+  const applyVO = () => { if (VO.x || VO.y) camera.setViewOffset(W.w, W.h, VO.x, VO.y, W.w, W.h); else camera.clearViewOffset(); };
+  function aimVO() {
+    const narrow = W.w < 760, open = cp >= 0;
+    const left = 134, right = W.w - 22 - Math.min(380, W.w - 44) - 12;   // between the month rail and the panel
+    VO.tx = open && !narrow ? Math.max(0, Math.round(W.w / 2 - (left + right) / 2)) : 0; VO.ty = open && narrow ? Math.round(W.h * .26) : 0;
+    VO.fw = open && !narrow ? Math.max(.3, (right - left) / W.w) : .95;
+    if (REDUCE) { VO.x = VO.tx; VO.y = VO.ty; applyVO(); }
   }
-  const fmt = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  function open(i) {
-    cur = (i + DATA.length) % DATA.length; mini();
-    const d = DATA[cur];
-    q('.xp-kick').textContent = d.kick;
-    q('.xp-count').textContent = `${cur + 1} / ${DATA.length}`;
-    q('.xp-title').textContent = d.title;
-    q('.xp-where').textContent = d.where;
-    q('.xp-stat b').textContent = d.stat[0];
-    q('.xp-stat span').textContent = d.stat[1];
-    q('.xp-text').textContent = d.text;
-    q('.xp-facts').innerHTML = d.facts.map(f => `<div><b>${fmt(f[0])}</b><span>${fmt(f[1])}</span></div>`).join('');
-    const a = q('.xp-go'); a.href = d.link; a.textContent = d.link_label;
-    panel.style.setProperty('--c', d.color);
+  const horizDir = t => { const v = new THREE.Vector3(camera.position.x - t.x, 0, camera.position.z - t.z); if (v.lengthSq() < 1) v.set(0, 0, 1); return v.normalize(); };
+  function flyToSpot(s, far = 1) {
+    const t = new THREE.Vector3(s.x, s.y + 2, s.z), dir = horizDir(t), narrow = W.w < 760;
+    flyTo(t.clone().add(dir.multiplyScalar((narrow ? 48 : 38) * far)).add(new THREE.Vector3(0, (narrow ? 34 : 27) * far, 0)), t);
+  }
+  // frame a group of places inside the free area
+  function flyToGroup(pts) {
+    if (pts.length === 1) return flyToSpot(pts[0], 2.3);
+    let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
+    for (const s of pts) { x0 = Math.min(x0, s.x); x1 = Math.max(x1, s.x); z0 = Math.min(z0, s.z); z1 = Math.max(z1, s.z); }
+    const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), ext = Math.max(x1 - x0, (z1 - z0) * 1.3) + 12;
+    const fw = Math.max(.25, VO.fw - 170 / W.w), fh = W.w < 760 ? .44 - 50 / W.h : .74 - 60 / W.h;   // leave room for the pin labels
+    const d = THREE.MathUtils.clamp(Math.max(ext / (2 * tanH * camera.aspect * fw), ext / (2 * tanH * fh * 1.35)), 75, 540);
+    const tgt = new THREE.Vector3((x0 + x1) / 2, 0, (z0 + z1) / 2), dir = horizDir(tgt);
+    flyTo(tgt.clone().addScaledVector(dir, d * .685).add(new THREE.Vector3(0, d * .729, 0)), tgt);
+  }
+
+  function setActive(pins) {
+    for (const el of active) if (!pins.includes(el)) { el.hidden = true; el.classList.remove('on', 'pop', 'off'); }
+    pins.forEach((el, k) => {
+      if (!el.hidden) return;
+      el.hidden = false; el._w = 0; el._L = null;
+      if (!REDUCE) { el.classList.remove('pop'); void el.offsetWidth; el.style.setProperty('--d', Math.min(k * .045, .6).toFixed(3) + 's'); el.classList.add('pop'); }
+    });
+    active = pins;
+  }
+  function showMarks(pid, color) {
+    for (const h of hubs) h.ring.visible = h.beam.visible = h.gem.visible = pid == null;
+    for (const m of marks) { const on = pid != null && inProg(m.it, pid); m.g.visible = on; if (on) { m.ring.material.color.set(color); m.dot.material.color.set(color); } }
+  }
+  function showPanel(color, isItem) {
+    panel.style.setProperty('--c', color);
+    panel.classList.toggle('item', isItem);
     panel.classList.add('open'); panel.classList.remove('swap'); void panel.offsetWidth; panel.classList.add('swap');
-    panel.setAttribute('aria-hidden', 'false');
-    pins.forEach((p, k) => p.classList.toggle('on', k === cur));
-    dockBtns.forEach((b, k) => { b.classList.toggle('on', k === cur); b.setAttribute('aria-current', k === cur ? 'true' : 'false'); });
-    const box = q('.xd-places'), db = dockBtns[cur];   // scroll only the dock row, never the page
-    box.scrollTo({ left: db.offsetLeft - box.offsetLeft - (box.clientWidth - db.offsetWidth) / 2, behavior: REDUCE ? 'auto' : 'smooth' });
-    flyToSpot(spots[cur]);
+    panel.setAttribute('aria-hidden', 'false'); panel.inert = false; stage.classList.add('pan'); aimVO();
+    q('.xp-in').scrollTop = 0;
+  }
+  function markDock() {
+    dockBtns.forEach((b, k) => { b.classList.toggle('on', k === cp); b.setAttribute('aria-current', k === cp ? 'true' : 'false'); });
+    const box = q('.xd-places'), db = dockBtns[cp];   // scroll only the dock row, never the page
+    if (db) box.scrollTo({ left: db.offsetLeft - box.offsetLeft - (box.clientWidth - db.offsetWidth) / 2, behavior: REDUCE ? 'auto' : 'smooth' });
+  }
+
+  // level 1: a program, with only its own projects and events on the map
+  function openProg(i, flyMode = 'fly') {
+    cp = (i + PROG.length) % PROG.length; ci = -1; mini();
+    const d = PROG[cp];
+    list = ITEMS.map((it, j) => j).filter(j => inProg(ITEMS[j], d.id));
+    q('.xp-kick').textContent = d.kick;
+    q('.xp-count').textContent = `${cp + 1} / ${PROG.length}`;
+    const rows = list.map(j => {
+      const it = ITEMS[j], T = TYPES[it.type];
+      return `<li><button type="button" data-j="${j}"><i>${T.svg}</i><span><b>${esc(it.title)}</b><small>${esc(T.label)} · ${esc(placeTxt(it))}${it.when ? ' · ' + esc(it.when) : ''}</small></span></button></li>`;
+    }).join('');
+    body.innerHTML = `<h2 class="xp-title">${esc(d.title)}</h2><p class="xp-where"><span>${esc(d.where)}</span></p>`
+      + `<div class="xp-stat"><b>${esc(d.stat[0])}</b><span>${esc(d.stat[1])}</span></div><p class="xp-text">${esc(d.text)}</p>`
+      + `<div class="xp-facts">${d.facts.map(f => `<div><b>${esc(f[0])}</b><span>${esc(f[1])}</span></div>`).join('')}</div>`
+      + `<div class="xp-list"><h3>Projects &amp; events <b>${list.length}</b></h3>`
+      + (list.length ? `<ul>${rows}</ul>` : '<p class="none">Projects and events for this program will appear here.</p>') + '</div>';
+    body.querySelectorAll('[data-j]').forEach(b => b.addEventListener('click', () => { tour(false); openItem(+b.dataset.j); }));
+    const a = q('.xp-go'); a.href = d.link; a.textContent = d.link_label;
+    q('.xp-prev').setAttribute('aria-label', 'Previous program'); q('.xp-next').setAttribute('aria-label', 'Next program');
+    showPanel(d.color, false); markDock();
+    for (const j of list) itemPins[j].style.setProperty('--c', d.color);
+    itemPins.forEach(p => p.classList.remove('on'));
+    setActive(list.map(j => itemPins[j])); showMarks(d.id, d.color);
+    if (flyMode === 'fly') flyToGroup(list.length ? list.map(j => marks[j]) : [hubs[cp]]);
     history.replaceState(null, '', '#' + d.id);
     lastAct = performance.now();
   }
+  // level 2: one project, event or centre
+  const CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>';
+  function openItem(j) {
+    const it = ITEMS[j];
+    if (cp < 0 || !inProg(it, PROG[cp].id)) openProg(PROG.findIndex(d => inProg(it, d.id)), 'none');
+    ci = j; mini();
+    const d = PROG[cp], T = TYPES[it.type], M = it.month ? MONTHS[it.month - 1] : null;
+    q('.xp-back span').textContent = d.short; q('.xp-back').setAttribute('aria-label', 'Back to ' + d.kick);
+    q('.xp-count').textContent = `${list.indexOf(j) + 1} / ${list.length}`;
+    body.innerHTML = `<div class="xp-type"><i>${T.svg}</i>${esc(T.label)}${it.when ? `<span>· ${esc(it.when)}</span>` : ''}</div>`
+      + `<h2 class="xp-title">${esc(it.title)}</h2>`
+      + `<p class="xp-where"><span>${esc(placeTxt(it))}${it.approx ? ' <em>approximate location</em>' : ''}</span></p>`
+      + (it.img ? `<figure class="xp-img"><img src="${esc(it.img)}" alt="${esc(it.img_alt || it.title)}"></figure>` : '')
+      + `<p class="xp-text">${esc(it.text)}</p>`
+      + (M ? `<button class="xp-month" type="button" style="--k:${M.color}">${CAL}<span>See Kutch in ${esc(M.name)}</span></button>` : '');
+    const mb = body.querySelector('.xp-month'); if (mb) mb.addEventListener('click', () => { stopPlay(); setMonth(it.month - 1); });
+    const a = q('.xp-go'); a.href = it.link || d.link; a.textContent = it.link ? it.link_label : d.link_label;
+    q('.xp-prev').setAttribute('aria-label', 'Previous place'); q('.xp-next').setAttribute('aria-label', 'Next place');
+    showPanel(d.color, true);
+    itemPins.forEach((p, k) => p.classList.toggle('on', k === j));
+    flyToSpot(marks[j]);
+    history.replaceState(null, '', `#${d.id}/${it.id}`);
+    lastAct = performance.now();
+  }
   function close(reset = true) {
-    cur = -1; panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true');
-    pins.forEach(p => p.classList.remove('on')); dockBtns.forEach(b => { b.classList.remove('on'); b.setAttribute('aria-current', 'false'); });
+    cp = -1; ci = -1; list = [];
+    panel.classList.remove('open', 'item'); panel.setAttribute('aria-hidden', 'true'); panel.inert = true; stage.classList.remove('pan');
+    markDock(); itemPins.forEach(p => p.classList.remove('on'));
+    setActive(hubPins); showMarks(null); aimVO();
     history.replaceState(null, '', location.pathname + location.search);
     if (reset) flyTo(HOME_POS, HOME_TGT, 1500);
   }
+  const step = k => { if (ci >= 0 && list.length) openItem(list[(list.indexOf(ci) + k + list.length) % list.length]); else if (cp >= 0) openProg(cp + k); };
+  const back = () => { if (ci >= 0) openProg(cp); else if (cp >= 0) close(); };
+  panel.inert = true;
   q('.xp-x').addEventListener('click', () => { tour(false); close(); });
-  q('.xp-next').addEventListener('click', () => { tour(false); open(cur + 1); });
-  q('.xp-prev').addEventListener('click', () => { tour(false); open(cur - 1); });
+  q('.xp-back').addEventListener('click', () => { tour(false); openProg(cp); });
+  q('.xp-next').addEventListener('click', () => { tour(false); step(1); });
+  q('.xp-prev').addEventListener('click', () => { tour(false); step(-1); });
   q('.xd-reset').addEventListener('click', () => { tour(false); close(); });
 
   // gentle 3D tilt of the glass panel under the pointer
@@ -436,53 +538,52 @@ async function init() {
     panel.addEventListener('pointerleave', () => { pin.style.setProperty('--ry', '0deg'); pin.style.setProperty('--rx', '0deg'); });
   }
 
-  // guided tour
+  // guided tour through the programs
   const tourBtn = q('.xd-tour'); let tourT = null;
   function tour(on) {
     clearInterval(tourT); tourT = null;
     tourBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     tourBtn.querySelector('span').textContent = on ? 'Pause' : 'Tour';
-    if (on) { open(cur < 0 ? 0 : cur + 1); tourT = setInterval(() => open(cur + 1), 7000); }
+    if (on) { openProg(cp < 0 ? 0 : cp + 1); tourT = setInterval(() => openProg(cp + 1), 7500); }
   }
   tourBtn.addEventListener('click', () => tour(!tourT));
   controls.addEventListener('start', () => { mini(); lastAct = performance.now(); if (tourT) tour(false); fly = null; controls.enabled = true; });
 
-  // seasons
-  // three seasons: 0 summer (Mar–Jun), 1 monsoon (Jul–Sep), 2 winter (Nov–Feb); every setting is a weighted mix of the three
-  let sw = [1, 0, 0], swFrom = [1, 0, 0], sIdx = 0, sK = 1, rainUntil = 0, rainAmt = 0, toastT;
-  const seasonBox = q('.xd-seasons'), seasonBtns = [...seasonBox.querySelectorAll('button')];
-  const TOAST = [
-    'Summer (March–June) – hot and hazy; tanks run low and Kesar mangoes ripen in the orchards',
-    'Monsoon (July–September) – the Rann floods, tanks fill and the land turns green',
-    'Winter (November–February) – the Rann dries to white salt, Rann Utsav tents rise at Dhordo and migratory birds come to Banni',
+  let toastT;
+  function showToast(html, k) { toast.innerHTML = html; toast.style.setProperty('--k', k || '#2e5b3b'); toast.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('show'), 5200); }
+
+  // ---------------- months ----------------
+  // Each month is a mix of three palettes (dry summer, green monsoon, clear winter) plus its own tank level,
+  // crop height, mango crop, Rann Utsav tents, winter birds and rain showers.
+  const MP = [
+    { w: [0, 0, 1], water: .7, crop: .55, fruit: 0, tents: 1, birds: 1, rain: 0 },             // Jan
+    { w: [.25, 0, .75], water: .58, crop: .5, fruit: 0, tents: 1, birds: 1, rain: 0 },         // Feb
+    { w: [.7, 0, .3], water: .45, crop: .22, fruit: .2, tents: .2, birds: .5, rain: 0 },       // Mar
+    { w: [1, 0, 0], water: .3, crop: .12, fruit: .5, tents: 0, birds: 0, rain: 0 },            // Apr
+    { w: [1, 0, 0], water: .12, crop: .1, fruit: .9, tents: 0, birds: 0, rain: 0 },            // May
+    { w: [.82, .18, 0], water: .08, crop: .2, fruit: 1, tents: 0, birds: 0, rain: .25 },       // Jun
+    { w: [.12, .88, 0], water: .6, crop: .65, fruit: .15, tents: 0, birds: 0, rain: 1 },       // Jul
+    { w: [0, 1, 0], water: .92, crop: .95, fruit: 0, tents: 0, birds: 0, rain: .9 },           // Aug
+    { w: [0, 1, 0], water: 1, crop: 1, fruit: 0, tents: 0, birds: .15, rain: .4 },             // Sep
+    { w: [.2, .6, .2], water: .96, crop: .7, fruit: 0, tents: 0, birds: .6, rain: 0 },         // Oct
+    { w: [.05, .2, .75], water: .88, crop: .35, fruit: 0, tents: .85, birds: 1, rain: 0 },     // Nov
+    { w: [0, 0, 1], water: .8, crop: .45, fruit: 0, tents: 1, birds: 1, rain: 0 },             // Dec
   ];
-  function showToast(t) { toast.textContent = t; toast.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('show'), 4200); }
-  function setSeason(i, quiet) {
-    sIdx = i; swFrom = sw.slice(); sK = 0;
-    seasonBox.style.setProperty('--i', i);
-    seasonBtns.forEach((b, k) => b.setAttribute('aria-checked', k === i ? 'true' : 'false'));
-    if (i === 1 && !REDUCE) rainUntil = performance.now() + 4200;
-    if (!quiet) showToast(TOAST[i]);
-    if (REDUCE) { sK = 1; sw = [0, 1, 2].map(k => k === i ? 1 : 0); applySeason(sw); }
-  }
-  seasonBtns.forEach((b, i) => b.addEventListener('click', () => setSeason(i)));
-  seasonBox.addEventListener('keydown', e => {
-    const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
-    if (!d) return; e.preventDefault(); e.stopPropagation(); const n = (sIdx + d + 3) % 3; setSeason(n); seasonBtns[n].focus();
-  });
+  const KEYS = ['water', 'crop', 'fruit', 'tents', 'birds'];
+  const cloneSt = s => { const o = { w: s.w.slice() }; for (const k of KEYS) o[k] = s[k]; return o; };
+  const lerpSt = (a, b, e) => { const o = { w: a.w.map((v, k) => v + (b.w[k] - v) * e) }; for (const k of KEYS) o[k] = a[k] + (b[k] - a[k]) * e; return o; };
 
   const C3 = a => a.map(col), V3 = a => a.map(p => new THREE.Vector3(...p));
-  const SET = {
+  const SET = {   // [summer, monsoon, winter]
     crown: C3(['#7f9150', '#4f8f4c', '#5f8a48']), shrub: C3(['#9a9256', '#5d8d45', '#7c8d50']), crop: C3(['#cdb77a', '#5f9e4f', '#b9b45c']),
     cloud: C3(['#ffffff', '#b9c2cb', '#ffffff']), cloudA: [.5, .9, .38], cloudE: [.14, 0, .16],
     sun: C3(['#ffdcaa', '#f1f2ee', '#fff3dc']), sunI: [3, 1.7, 2.5], sunP: V3([[150, 320, 110], [170, 260, 120], [235, 150, 165]]),
     hemi: C3(['#fff1d6', '#e9eef0', '#f4f7fb']), sea: C3(['#3d8db7', '#4b8aa3', '#2c7fb4']),
     skyT: C3(['#9cc6df', '#7f95a8', '#5fa9e6']), skyB: C3(['#f6dfb6', '#e1e6e1', '#eaf0f2']), fogN: [360, 400, 560], fogF: [1100, 1150, 1600],
-    water: [.18, 1, .7], cropH: [.18, 1, .62], fruit: [1, .35, 0],
   };
   const tmpV = new THREE.Vector3();
-  function applySeason(w) {
-    const n = a => a[0] * w[0] + a[1] * w[1] + a[2] * w[2];
+  function applySeason(s) {
+    const w = s.w, n = a => a[0] * w[0] + a[1] * w[1] + a[2] * w[2];
     const c = (out, a) => out.setRGB(n([a[0].r, a[1].r, a[2].r]), n([a[0].g, a[1].g, a[2].g]), n([a[0].b, a[1].b, a[2].b]));
     seasonU.value.set(w[0], w[1], w[2]);
     c(mats.crown.color, SET.crown); c(mats.shrub.color, SET.shrub); c(mats.crop.color, SET.crop);
@@ -491,56 +592,105 @@ async function init() {
     tmpV.set(0, 0, 0); SET.sunP.forEach((p, k) => tmpV.addScaledVector(p, w[k])); sun.position.copy(HOME_TGT).add(tmpV);
     c(hemi.color, SET.hemi); c(seaMat.color, SET.sea);
     c(skyU.top.value, SET.skyT); c(skyU.bot.value, SET.skyB); scene.fog.color.copy(skyU.bot.value); scene.fog.near = n(SET.fogN); scene.fog.far = n(SET.fogF);
-    const lvl = n(SET.water);
+    const lvl = s.water;
     waters.forEach(({ m, t }) => { m.position.y = lvl < .05 ? t.y - .1 : t.y + .02 + .14 * lvl; m.scale.setScalar(.6 + .4 * lvl); });
-    const ch = n(SET.cropH);
-    crops.forEach((cr, i) => { dummy.position.set(cr.x, cr.y, cr.z); dummy.rotation.set(0, cr.ry, 0); dummy.scale.set(cr.s, cr.s * ch, cr.s); dummy.updateMatrix(); cropMesh.setMatrixAt(i, dummy.matrix); });
+    crops.forEach((cr, i) => { dummy.position.set(cr.x, cr.y, cr.z); dummy.rotation.set(0, cr.ry, 0); dummy.scale.set(cr.s, cr.s * s.crop, cr.s); dummy.updateMatrix(); cropMesh.setMatrixAt(i, dummy.matrix); });
     cropMesh.instanceMatrix.needsUpdate = true;
-    const fs = Math.max(.001, sstep(.3, 1, n(SET.fruit)));
+    const fs = Math.max(.001, sstep(.3, 1, s.fruit));
     fruits.forEach((f, i) => { dummy.position.set(f.x, f.y, f.z); dummy.rotation.set(0, 0, 0); dummy.scale.setScalar(fs); dummy.updateMatrix(); fruitMesh.setMatrixAt(i, dummy.matrix); });
     fruitMesh.instanceMatrix.needsUpdate = true;
-    const ts = Math.max(.001, sstep(.35, 1, w[2]));
+    const ts = Math.max(.001, sstep(.35, 1, s.tents));
     tents.forEach((t, i) => { dummy.position.set(t.x, t.y, t.z); dummy.rotation.set(0, t.ry, 0); dummy.scale.setScalar(ts); dummy.updateMatrix(); tentMesh.setMatrixAt(i, dummy.matrix); });
     tentMesh.instanceMatrix.needsUpdate = true;
-    birdMat.opacity = sstep(.4, 1, w[2]); flocks.forEach(g => { g.visible = birdMat.opacity > .02; });
+    birdMat.opacity = sstep(.4, 1, s.birds); flocks.forEach(g => { g.visible = birdMat.opacity > .02; });
   }
-  applySeason(sw);
+
+  const rail = q('.xmonths'), mBox = q('.xm-list'), mBtns = [...mBox.querySelectorAll('button')], mSeason = q('.xm-season'), playBtn = q('.xm-play');
+  const PLAY = playBtn.innerHTML, PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>';
+  let mIdx = new Date().getMonth(), st = cloneSt(MP[mIdx]), stFrom = cloneSt(st), mK = 1, rainT0 = 0, rainAmt = 0, playT = null;
+  function setMonth(i, mode) {
+    mIdx = (i + 12) % 12; stFrom = cloneSt(st); mK = 0; rainT0 = performance.now();
+    const M = MONTHS[mIdx];
+    mBox.style.setProperty('--i', mIdx);
+    mBtns.forEach((b, k) => { b.setAttribute('aria-checked', k === mIdx ? 'true' : 'false'); b.tabIndex = k === mIdx ? 0 : -1; });
+    mSeason.textContent = M.season; rail.style.setProperty('--k', M.color);
+    if (mode !== 'quiet') showToast(`<b>${esc(M.name)} · ${esc(M.season)}</b> – ${esc(M.text)}`, M.color);
+    if (REDUCE || mode === 'quiet') { mK = 1; st = cloneSt(MP[mIdx]); applySeason(st); }
+  }
+  function stopPlay() {
+    if (!playT) return;
+    clearInterval(playT); playT = null;
+    playBtn.setAttribute('aria-pressed', 'false'); playBtn.innerHTML = PLAY; playBtn.setAttribute('aria-label', 'Play the year, month by month');
+  }
+  playBtn.addEventListener('click', () => {
+    if (playT) return stopPlay();
+    playBtn.setAttribute('aria-pressed', 'true'); playBtn.innerHTML = PAUSE; playBtn.setAttribute('aria-label', 'Pause the year');
+    setMonth(mIdx + 1); playT = setInterval(() => setMonth(mIdx + 1), 3600);
+  });
+  mBtns.forEach((b, i) => b.addEventListener('click', () => { stopPlay(); setMonth(i); }));
+  mBox.addEventListener('keydown', e => {
+    const k = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+    const nx = k ? mIdx + k : e.key === 'Home' ? 0 : e.key === 'End' ? 11 : null;
+    if (nx === null) return;
+    e.preventDefault(); e.stopPropagation(); stopPlay(); setMonth(nx); mBtns[mIdx].focus();
+  });
+  setMonth(mIdx, 'quiet');   // start on this month
 
   // ---------------- size, loop ----------------
   const W = { w: 1, h: 1 };
   const setHH = () => stage.style.setProperty('--hh', (document.querySelector('header')?.offsetHeight || 67) + 'px');
   setHH(); addEventListener('resize', setHH);
-  function resize() { W.w = stage.clientWidth; W.h = stage.clientHeight; renderer.setSize(W.w, W.h, false); camera.aspect = W.w / W.h; camera.updateProjectionMatrix(); }
+  function resize() {
+    W.w = stage.clientWidth; W.h = stage.clientHeight; renderer.setSize(W.w, W.h, false); camera.aspect = W.w / W.h;
+    aimVO(); VO.x = VO.tx; VO.y = VO.ty; applyVO(); camera.updateProjectionMatrix();
+    for (const el of hubPins.concat(itemPins)) el._w = 0;   // pin sizes change at the phone breakpoint
+  }
   new ResizeObserver(resize).observe(stage); resize();
 
   const v3 = new THREE.Vector3(); let last = performance.now(), running = true;
   document.addEventListener('visibilitychange', () => { running = !document.hidden; if (running) { last = performance.now(); requestAnimationFrame(loop); } });
 
   function project(v) { v3.copy(v).project(camera); return { x: (v3.x * .5 + .5) * W.w, y: (-v3.y * .5 + .5) * W.h, behind: v3.z > 1 }; }
-  function placeUI() {
-    for (let i = 0; i < spots.length; i++) {
-      const s = spots[i], el = pins[i], p = project(s.anchor);
-      const off = p.behind || p.x < -60 || p.x > W.w + 60 || p.y < -20 || p.y > W.h + 80;
+  const crowdW = el => { if (!el._wc) { el.classList.add('crowd'); el._wc = el.offsetWidth; el.classList.remove('crowd'); } return el._wc; };
+  // pins never cover each other: a crowded pin climbs on a longer stem, then drops its label
+  function placeUI(dt) {
+    const boxes = [], P = [];
+    for (const el of active) {
+      const p = project(el._a), off = p.behind || p.x < -60 || p.x > W.w + 60 || p.y < -20 || p.y > W.h + 80;
       el.classList.toggle('off', off);
-      if (off) { el._r = null; continue; }
-      const d = camera.position.distanceTo(s.anchor), sc = THREE.MathUtils.clamp(130 / d, .7, 1.12);
-      el.style.transform = `translate3d(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px,0) translate(-50%,-100%) scale(${sc.toFixed(3)})`;
-      if (el._w) el._r = { x0: p.x - el._w * sc / 2, x1: p.x + el._w * sc / 2, y0: p.y - el._h * sc - 12, y1: p.y };
-      el.style.zIndex = String(3000 - Math.round(d) + (i === cur ? 800 : 0));
+      if (off) continue;
+      if (!el._w) { el._w = el.offsetWidth; el._h = el.offsetHeight; el._wc = 0; }
+      P.push({ el, p, d: camera.position.distanceTo(el._a), on: el.classList.contains('on') });
     }
-    const camD = camera.position.distanceTo(controls.target), boxes = [];
-    for (let i = 0; i < pins.length; i++) {
-      const el = pins[i]; if (el.classList.contains('off')) continue;
-      if (!el._w) { el._w = el.offsetWidth; el._h = el.offsetHeight; }
-      const r = el._r; if (r) boxes.push(r);
+    P.sort((a, b) => b.on - a.on);   // the selected pin first, then in list order
+    const hit = r => boxes.some(b => r.x0 < b.x1 && r.x1 > b.x0 && r.y0 < b.y1 && r.y1 > b.y0);
+    for (const o of P) {
+      const { el, p } = o, sc = THREE.MathUtils.clamp((el._item ? 112 : 130) / o.d, .7, 1.12), h = el._h * sc;
+      let best = null;
+      for (let pass = 0; pass < 2 && !best; pass++) {
+        if (pass && o.on) break;
+        const w = (pass ? crowdW(el) : el._w) * sc + 6;
+        for (let k = 0; k < 5 && !best; k++) {
+          const L = k * (h + 4), r = { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - L - h - 2, y1: p.y - L + 2 };
+          if (!hit(r)) best = { r, L, crowd: pass === 1 };
+        }
+      }
+      if (!best) { const w = (o.on ? el._w : crowdW(el)) * sc; best = { r: { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - h, y1: p.y }, L: 0, crowd: !o.on }; }
+      boxes.push(best.r);
+      el._L = el._L == null ? best.L : el._L + (best.L - el._L) * Math.min(1, dt * 14);
+      el.classList.toggle('crowd', best.crowd);
+      el.style.setProperty('--lift', (el._L / sc).toFixed(1) + 'px');
+      el.style.transform = `translate3d(${p.x.toFixed(1)}px,${(p.y - el._L).toFixed(1)}px,0) translate(-50%,-100%) scale(${sc.toFixed(3)})`;
+      el.style.zIndex = String(3000 - Math.round(o.d) + (o.on ? 800 : 0));
     }
+    const camD = camera.position.distanceTo(controls.target);
     for (const l of labels) {
       const p = project(l.v);
       let show = !p.behind && p.x > -80 && p.x < W.w + 80 && p.y > -20 && p.y < W.h + 20 && (l.kind === 'town' || l.kind === 'peak' ? camD < 420 : camD > 140);
       if (show && (l.kind === 'town' || l.kind === 'peak')) {
         if (!l.w) { l.w = l.el.offsetWidth || 60; l.h = l.el.offsetHeight || 22; }
         const a = { x0: p.x - l.w / 2, x1: p.x + l.w / 2, y0: p.y - 4, y1: p.y - 4 + l.h };
-        if (boxes.some(b => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0)) show = false;
+        if (hit(a)) show = false;
         else boxes.push(a);   // later labels give way to earlier ones (e.g. Dhordo to Khavda until you zoom in)
       }
       l.el.classList.toggle('off', !show);
@@ -557,15 +707,16 @@ async function init() {
       camera.position.lerpVectors(fly.p0, fly.p1, e); controls.target.lerpVectors(fly.t0, fly.t1, e);
       if (k >= 1) { fly = null; controls.enabled = true; }
     }
-    controls.autoRotate = !REDUCE && introDone && cur < 0 && !fly && now - lastAct > 7000;
+    controls.autoRotate = !REDUCE && introDone && cp < 0 && !fly && now - lastAct > 7000;
     controls.update();
-
-    if (sK < 1) {
-      sK = Math.min(1, sK + dt / 2.6); const e = ease(sK);
-      sw = swFrom.map((v, k) => v + ((k === sIdx ? 1 : 0) - v) * e);
-      applySeason(sw);
+    if (VO.x !== VO.tx || VO.y !== VO.ty) {
+      const k = Math.min(1, dt * 4.5); VO.x += (VO.tx - VO.x) * k; VO.y += (VO.ty - VO.y) * k;
+      if (Math.abs(VO.tx - VO.x) < .5 && Math.abs(VO.ty - VO.y) < .5) { VO.x = VO.tx; VO.y = VO.ty; }
+      applyVO();
     }
-    const rainTo = sIdx === 1 && now < rainUntil ? 1 : 0;
+
+    if (mK < 1) { mK = Math.min(1, mK + dt / 2.2); st = lerpSt(stFrom, MP[mIdx], ease(mK)); applySeason(st); }
+    const rr = MP[mIdx].rain, rainTo = !REDUCE && rr > 0 && (now - rainT0) % 15000 < 3500 + 5500 * rr ? .4 + .6 * rr : 0;   // passing showers, not all-day rain
     rainAmt += (rainTo - rainAmt) * Math.min(1, dt * 2.5);
     rain.visible = rainAmt > .01; rainMat.opacity = rainAmt * .6;
     if (rain.visible) {
@@ -581,33 +732,43 @@ async function init() {
       for (const g of cows) g.userData.head.position.y = .95 - (Math.sin(t * 1.3 + g.userData.ph) > .6 ? .35 : 0);
       flag.rotation.y = Math.sin(t * 2.4) * .25;
       for (const g of flocks) if (g.visible) g.rotation.y += g.userData.v * dt;
-      for (let i = 0; i < spots.length; i++) {
-        const s = spots[i], on = i === cur;
+      if (cp < 0) hubs.forEach((s, i) => {
         s.gem.position.y = s.y + 9 + Math.sin(t * 1.6 + i) * .5; s.gem.rotation.y = t * .9 + i;
-        const p = (t * .6 + i * .13) % 1; s.ring.scale.setScalar((on ? 1.25 : 1) + p * .5); s.ring.material.opacity = (on ? 1 : .8) * (1 - p);
-      }
+        const p = (t * .6 + i * .13) % 1; s.ring.scale.setScalar(1 + p * .5); s.ring.material.opacity = .8 * (1 - p);
+      });
+      else marks.forEach((m, i) => {
+        if (!m.g.visible) return;
+        const on = ci >= 0 && ITEMS[ci] === m.it, p = (t * .7 + i * .17) % 1;
+        m.ring.scale.setScalar((on ? 1.6 : 1) + p * .7); m.ring.material.opacity = (on ? 1 : .85) * (1 - p);
+      });
     }
     sky.position.copy(camera.position);
     renderer.render(scene, camera);
-    placeUI();
+    placeUI(dt);
     requestAnimationFrame(loop);
   }
 
-  // first frame, then intro: fly in, the monsoon arrives
+  // first frame, then the intro flight and this month's story
   stage.classList.add('ready'); stage.classList.remove('nogl');
   requestAnimationFrame(loop);
-  const target = DATA.findIndex(d => '#' + d.id === location.hash);
-  if (REDUCE) { setSeason(1, true); if (target >= 0) open(target); }
+  const [hp, hi] = location.hash.slice(1).split('/');
+  const tp = PROG.findIndex(d => d.id === hp), ti = hi ? ITEMS.findIndex(it => it.id === hi) : -1;
+  const openHash = () => {
+    if (tp < 0) return;
+    if (ti >= 0 && inProg(ITEMS[ti], PROG[tp].id)) { openProg(tp, 'none'); openItem(ti); } else openProg(tp);
+  };
+  const monthNote = () => { const M = MONTHS[mIdx]; showToast(`<b>${esc(M.name)} · ${esc(M.season)}</b> – ${esc(M.text)}`, M.color); };
+  if (REDUCE) openHash();
   else {
     flyTo(HOME_POS, HOME_TGT, 3600);
-    setTimeout(() => setSeason(1), 2000);
-    setTimeout(() => { introDone = true; if (target >= 0) open(target); }, 3800);
+    setTimeout(monthNote, 2200);
+    setTimeout(() => { introDone = true; openHash(); }, 3800);
   }
 
   addEventListener('keydown', e => {
     if (e.target.closest && e.target.closest('input,textarea')) return;
-    if (e.key === 'Escape' && cur >= 0) { tour(false); close(); }
-    else if (e.key === 'ArrowRight' && cur >= 0) { tour(false); open(cur + 1); }
-    else if (e.key === 'ArrowLeft' && cur >= 0) { tour(false); open(cur - 1); }
+    if (e.key === 'Escape' && cp >= 0) { tour(false); back(); }
+    else if (e.key === 'ArrowRight' && cp >= 0) { tour(false); step(1); }
+    else if (e.key === 'ArrowLeft' && cp >= 0) { tour(false); step(-1); }
   });
 }

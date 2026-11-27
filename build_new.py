@@ -1071,48 +1071,167 @@ X3D_ICON = {
     "animal": '<path d="M7 8h10l1 5a6 6 0 0 1-12 0zM4 6l3 2M20 6l-3 2M10 15h4"/>',
     "rebuild": '<path d="M4 11l8-6 8 6v9H4zM10 20v-5h4v5"/>',
     "school": '<path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/>',
+    "centres": '<path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+    # item types
+    "t-project": '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+    "t-event": '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+    "t-centre": '<path d="M4 21V8l8-4 8 4v13M9 21v-5h6v5M3 21h18"/>',
 }
 X3D_SVG = lambda k: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>' % X3D_ICON[k]
+
+# Programs: one pin each on the 3D map. lat/lon is where the program's pin (and its 3D props) sit.
 X3D = [
-    dict(id="jal", short="Jal Mandir", kick="Kutch Jal Mandir Abhiyan", title="Village tanks, revived together", lat=23.34, lon=70.25, where="Kumbhardi, Bhachau taluka – one of 332 tanks across Kutch", color="#3b97cf",
+    dict(id="jal", short="Jal Mandir", kick="Kutch Jal Mandir Abhiyan", title="Village tanks, revived together", lat=23.343, lon=70.263, where="332 village tanks across Kutch, 2012–2024", color="#3b97cf",
          stat=["332", "village tanks revived since 2012"],
          text="Old village tanks are desilted with the community: the project pays for an excavator, villagers bring their tractors, and the silt goes back to strengthen bunds and fields.",
          facts=[["8,835 lac L", "water storage added"], ["43%", "of the cost carried by villagers"]], link="p-kutch-jal-mandir-abhiyan.html", link_label="Open Jal Mandir"),
-    dict(id="water", short="Check dams", kick="Water conservation", title="Holding the rain where it falls", lat=23.14, lon=68.95, where="Abdasa taluka – the Trust began at Kothara in 1989", color="#2f86c0",
+    dict(id="water", short="Check dams", kick="Water conservation", title="Holding the rain where it falls", lat=22.993, lon=69.026, where="Watershed works in Abdasa and across Kutch", color="#2f86c0",
          stat=["705", "water structures built"],
          text="Storage and percolation tanks, check dams, farm ponds and recharge wells keep rainwater in the village and push it back into the ground.",
          facts=[["141", "storage tanks"], ["134", "farm ponds"]], link="p-water-conservation.html", link_label="Open water conservation"),
-    dict(id="drink", short="Drinking water", kick="Drinking water · WASMO", title="Water schemes run by the village", lat=23.47, lon=70.52, where="37 villages across Kutch (shown near Rapar)", color="#4aa7bf",
+    dict(id="drink", short="Drinking water", kick="Drinking water · WASMO", title="Water schemes run by the village", lat=23.350, lon=69.265, where="Abdasa, Nakhatrana and Lakhpat talukas", color="#4aa7bf",
          stat=["37", "villages with community-run water schemes"],
          text="Under WASMO, village committees build and manage their own drinking-water schemes, with roof-top rainwater harvesting at schools.",
          facts=[["₹620.82 lac", "invested in village schemes"], ["9", "roof-top harvesting systems"]], link="p-decentralized-drinking-water-supply-scheme-project.html", link_label="Open drinking water"),
-    dict(id="fodder", short="Fodder", kick="Fodder security", title="Green fodder for village cattle", lat=23.43, lon=69.42, where="Farmers across Kutch (shown near Nakhatrana)", color="#5f9e4f",
+    dict(id="fodder", short="Fodder", kick="Fodder security", title="Green fodder for village cattle", lat=22.879, lon=69.516, where="Farmers across Kutch; grazing-land pilot at Nani Khakhar", color="#5f9e4f",
          stat=["14,21,800", "Napier (NB21) green-fodder cuttings"],
          text="Fodder seeds for rainfed farmers, Napier cuttings for irrigated farms, grazing land for the village herd and sheds to store dry fodder.",
          facts=[["1,090", "farmers in the fodder project"], ["170 acres", "grazing land developed"]], link="p-agriculture-development.html", link_label="Open agriculture"),
-    dict(id="fruit", short="Fruit & seeds", kick="Agriculture development", title="Orchards, seeds and healthy soil", lat=22.96, lon=69.28, where="Mandvi taluka – the Beej Rath set off from Nani Khakhar", color="#e08326",
+    dict(id="fruit", short="Fruit & seeds", kick="Agriculture development", title="Orchards, seeds and healthy soil", lat=22.843, lon=69.275, where="Krishi Seva Kendras and native-seed centres across Kutch", color="#e08326",
          stat=["21,725", "fruit plants promoted"],
          text="Anmol Beej Bank – Gujarat's largest traditional seed bank – keeps local seeds alive, and the Bio Resource Centre helps farmers move to chemical-free farming.",
          facts=[["1,870", "farmers at the Bio Resource Centre"], ["26", "villages on the Beej Rath route"]], link="p-agriculture-development.html", link_label="Open agriculture"),
-    dict(id="forest", short="Forest", kick="Tree plantation", title="Bringing the trees back", lat=23.30, lon=69.73, where="Bhuj – plantations with the Indian Army", color="#3f7a4f",
+    dict(id="forest", short="Forest", kick="Tree plantation", title="Bringing the trees back", lat=23.30, lon=69.73, where="With villages, and with the Indian Army in Bhuj", color="#3f7a4f",
          stat=["8", "tree-plantation projects"],
          text="The Trust began in 1989 because trees were disappearing from Kutch. We plant with villages and with the Indian Army in Bhuj, and broadcast seed balls on open land.",
          facts=[["₹26.25 lac", "invested in plantation"], ["1989", "the year we began"]], link="about.html", link_label="Why we began"),
-    dict(id="animal", short="Animal health", kick="Animal health care", title="Healthy herds, healthy families", lat=22.93, lon=69.62, where="Mundra taluka – 11 villages", color="#a4492b",
+    dict(id="animal", short="Animal health", kick="Animal health care", title="Healthy herds, healthy families", lat=22.839, lon=69.725, where="Pashupalak Mitra and livestock centres; 11 villages in Mundra", color="#a4492b",
          stat=["45,000+", "animals vaccinated against brucellosis in Mundra since 2012"],
          text="Pashupalak Mitra centres vaccinate female calves, test milk and blood for Brucella and run awareness camps with pastoral families.",
-         facts=[["11", "villages in Mundra, with Adani Foundation"], ["NDDB", "among our animal-health partners"]], link="p-animal-health-care.html", link_label="Open animal health"),
-    dict(id="rebuild", short="Rebuilding", kick="Disaster management", title="After the 2001 earthquake", lat=23.17, lon=70.12, where="A village rebuilt after 2001 (shown near Anjar)", color="#c98a2b",
+         facts=[["3", "livestock service centres"], ["NDDB", "among our animal-health partners"]], link="p-animal-health-care.html", link_label="Open animal health"),
+    dict(id="rebuild", short="Rebuilding", kick="Disaster management", title="After the 2001 earthquake", lat=23.17, lon=70.12, where="Earthquake relief and a village rebuilt", color="#c98a2b",
          stat=["134", "permanent houses built"],
          text="After the 2001 earthquake the Trust put up temporary shelters, then rebuilt a village with a school, community centre, drinking water, sanitation and solar street lights.",
          facts=[["174", "temporary shelters"], ["24", "houses repaired and retrofitted"]], link="p-natural-disaster-management.html", link_label="Open disaster relief"),
-    dict(id="school", short="Van Shala", kick="Primary education", title="A school where there was none", lat=23.66, lon=68.86, where="Kalara Wandh, Lakhpat taluka", color="#7d63b0",
-         stat=["Van Shala", "forest school at Kalara Wandh, Lakhpat"],
-         text="Reaching the unreached: our Van Shala – a forest school – brings primary education to children at Kalara Wandh in Lakhpat taluka, on Kutch's western edge.",
-         facts=[["Lakhpat", "taluka, western Kutch"], ["Primary", "education for the unreached"]], link="p-primary-education-for-unreached-community.html", link_label="Open education"),
+    dict(id="school", short="Schools", kick="Primary education", title="A school where there was none", lat=23.66, lon=68.86, where="Lakhpat taluka and the edge of the Rann", color="#7d63b0",
+         stat=["2", "schools for children the system missed"],
+         text="Reaching the unreached: a Van Shala (forest school) at Kalara Wandh in Lakhpat, and a school for the children of salt-pan workers at Kadol, on the edge of the Rann.",
+         facts=[["Van Shala", "forest school, Lakhpat"], ["Agariya Shala", "for salt-pan workers' children"]], link="p-primary-education-for-unreached-community.html", link_label="Open education"),
+    dict(id="centres", short="Our centres", kick="Offices & field centres", title="Where the Trust works from", lat=23.130, lon=68.940, where="Registered at Kothara, run from Bhuj, field centres in three talukas", color="#2e5b3b",
+         stat=["200+", "villages in seven talukas of Kutch"],
+         text="Field centres bring farm advice, native seeds and animal care close to the villages: Samriddhi Krishi Seva Kendra at Nani Khakhar, Wel Netrutva Krishi Seva Kendra at Nani Nagalpar and Khadir Vistar Vikas Kendra at Ratanpar.",
+         facts=[["1989", "registered at Kothara, Abdasa"], ["5", "offices and field centres"]], link="contact.html", link_label="Addresses & contact"),
 ]
 for _d in X3D:
     _d["icon"] = _d["id"]
+
+# Projects, events and centres. They appear on the map only after you pick their program.
+# To add one, copy an entry and change it:
+#   id        unique, lower-case, used in links: explore.html#<program>/<id>
+#   program   list of program ids above (an item can belong to more than one)
+#   type      "project", "event" or "centre"
+#   short     label on the map pin (keep it under ~22 characters)
+#   place, taluka, lat, lon   village and position (approx=True shows "approximate location")
+#   when      date text, e.g. "28 March 1989" ("" if undated); month 1–12 offers "See Kutch in <month>"
+#   text      one or two sentences;  img/img_alt, link/link_label are optional
+# Coordinates: OpenStreetMap (Nominatim). Kalara Wandh is not on OSM, so it is approximate.
+X3D_ITEMS = [
+    dict(id="pabasari-kumbhardi", program=["jal"], type="event", short="Pabasari tank", title="Pabasari Jal Mandir revival", place="Kumbhardi", taluka="Bhachau", lat=23.343, lon=70.263,
+         text="Work to deepen and clean the Pabasari tank began with support from Aarti Foundation, Setu Abhiyan and the Gram Panchayat. The idea came from the sarpanch, Devshibhai Rabari, and villagers brought their own tractors.",
+         img="img/updates/pabasari-kumbhardi-jal-mandir.jpg", img_alt="Newspaper report on the Pabasari Jal Mandir revival", link="u-pabasari-jal-mandir-kumbhardi.html", link_label="Read the news report"),
+    dict(id="lathedi-watershed", program=["water"], type="project", short="Lathedi watershed", title="Watershed project, Lathedi", place="Lathedi", taluka="Abdasa", lat=22.993, lon=69.026,
+         text="Watershed works and check dams keep monsoon water in the village; after good rains the check dam at Lathedi overflows.",
+         img="img/gal/watershed-04.jpg", img_alt="Check dam overflowing at Lathedi", link="gallery.html#watershed", link_label="Watershed photos"),
+    dict(id="piyoni", program=["water"], type="project", short="Piyoni", title="Water held at Piyoni", place="Piyoni", taluka="Abdasa", lat=23.278, lon=69.182,
+         text="Part of the Trust's watershed and check-dam work: water still standing at Piyoni after the monsoon.",
+         img="img/gal/watershed-02.jpg", img_alt="Piyoni after the monsoon", link="gallery.html#watershed", link_label="Watershed photos"),
+    dict(id="wasmo-abdasa", program=["drink"], type="project", short="Abdasa villages", title="Village water schemes, Abdasa", place="Villages of Abdasa taluka", taluka="Abdasa", lat=23.261, lon=68.827, approx=True,
+         text="Under WASMO, each village water committee (pani samiti) plans, builds and runs its own drinking-water scheme, with water-quality training at committee level."),
+    dict(id="wasmo-nakhatrana", program=["drink"], type="project", short="Nakhatrana villages", title="Village water schemes, Nakhatrana", place="Villages of Nakhatrana taluka", taluka="Nakhatrana", lat=23.350, lon=69.265, approx=True,
+         text="Community-managed drinking water and sanitation under WASMO, including awareness for total sanitation (Nirmal Gram)."),
+    dict(id="wasmo-lakhpat", program=["drink"], type="project", short="Lakhpat villages", title="Village water schemes, Lakhpat", place="Villages of Lakhpat taluka", taluka="Lakhpat", lat=23.635, lon=68.901, approx=True,
+         text="Decentralised drinking-water schemes in Lakhpat taluka, run by the village water committees, with roof-top rainwater harvesting at schools."),
+    dict(id="gauchar-nani-khakhar", program=["fodder", "forest"], type="project", short="Gauchar pilot", title="Grazing-land (gauchar) pilot", place="Nani Khakhar", taluka="Mandvi", lat=22.879, lon=69.516,
+         text="The village's common grazing land was prepared, sown with fodder seed by seed drill and planted with trees – a pilot for gauchar development in Kutch.",
+         img="img/gal/gauchar-02.jpg", img_alt="Seed drill on grazing land", link="gallery.html#gauchar", link_label="Gauchar photos"),
+    dict(id="ksk-nani-khakhar", program=["fruit", "animal", "centres"], type="centre", short="Samriddhi KSK", title="Samriddhi Krishi Seva Kendra", place="Nani Khakhar", taluka="Mandvi", lat=22.879, lon=69.516,
+         text="Field centre for farmers and herders: the Bio Resource Centre for chemical-free farming, the Anmol Beej Bank of traditional seeds, and Pashupalak Mitra animal care with a livestock service centre.",
+         link="p-agriculture-development.html", link_label="Agriculture programme"),
+    dict(id="beej-rath", program=["fruit"], type="event", short="Beej Rath sets out", title="Anmol Beej Rath sets out", place="Nani Khakhar", taluka="Mandvi", lat=22.879, lon=69.516,
+         text="The Anmol Beej Rath set out to promote native (desi) seeds in 26 villages of Mandvi and Mundra talukas, opening native-seed centres along the way.",
+         img="img/updates/sandesh-anmol-beej-rath.jpg", img_alt="Sandesh report on the Anmol Beej Rath", link="u-anmol-beej-rath-launch.html", link_label="Read the news report"),
+    dict(id="seed-kathda", program=["fruit"], type="centre", short="Seed centre · Kathda", title="Native-seed centre, Kathda", place="Kathda", taluka="Mandvi", lat=22.843, lon=69.275,
+         text="One of the native-seed distribution centres opened with the Anmol Beej Rath, bringing traditional seeds back to rainfed farms."),
+    dict(id="seed-bag", program=["fruit"], type="centre", short="Seed centre · Bag", title="Native-seed centre, Bag", place="Bag", taluka="Mandvi", lat=22.850, lon=69.401,
+         text="One of the native-seed distribution centres opened with the Anmol Beej Rath, bringing traditional seeds back to rainfed farms."),
+    dict(id="seed-gundiyali", program=["fruit"], type="centre", short="Seed centre · Gundiyali", title="Native-seed centre, Gundiyali", place="Gundiyali", taluka="Mandvi", lat=22.836, lon=69.419,
+         text="One of the native-seed distribution centres opened with the Anmol Beej Rath, bringing traditional seeds back to rainfed farms."),
+    dict(id="seed-faradi", program=["fruit"], type="centre", short="Seed centre · Faradi", title="Native-seed centre, Faradi", place="Faradi", taluka="Mandvi", lat=22.941, lon=69.515,
+         text="One of the native-seed distribution centres opened with the Anmol Beej Rath, bringing traditional seeds back to rainfed farms."),
+    dict(id="seed-lodai", program=["fruit"], type="centre", short="Seed centre · Lodai", title="Native-seed centre, Lodai", place="Lodai", taluka="Bhuj", lat=23.395, lon=69.890,
+         text="A native-seed distribution centre in Bhuj taluka, part of the Anmol Beej Bank network."),
+    dict(id="seed-dador", program=["fruit"], type="centre", short="Seed centre · Dador", title="Native-seed centre, Dador", place="Dador", taluka="Nakhatrana", lat=23.492, lon=69.383,
+         text="A native-seed distribution centre in Nakhatrana taluka, part of the Anmol Beej Bank network."),
+    dict(id="seed-siyot", program=["fruit"], type="centre", short="Seed centre · Siyot", title="Native-seed centre, Siyot", place="Siyot", taluka="Lakhpat", lat=23.733, lon=68.903,
+         text="A native-seed distribution centre in Lakhpat taluka, in the far west of Kutch."),
+    dict(id="seed-ratanpar", program=["fruit"], type="centre", short="Seed centre · Ratanpar", title="Native-seed centre, Ratanpar (Khadir)", place="Ratanpar (Khadir)", taluka="Bhachau", lat=23.860, lon=70.364,
+         text="A native-seed distribution centre on Khadir island, in the middle of the Great Rann."),
+    dict(id="ksk-nani-nagalpar", program=["fruit", "animal", "centres"], type="centre", short="Wel Netrutva KSK", title="Wel Netrutva Krishi Seva Kendra", place="Nani Nagalpar", taluka="Anjar", lat=23.107, lon=69.997,
+         text="Field centre for farmers in Anjar taluka, with a Pashupalak Mitra animal-health centre.", link="p-agriculture-development.html", link_label="Agriculture programme"),
+    dict(id="army-plantation", program=["forest"], type="project", short="With the Indian Army", title="Tree plantation with the Indian Army", place="Bhuj", taluka="Bhuj", lat=23.247, lon=69.668, approx=True,
+         text="Plantation drives with the Indian Army in Bhuj, alongside community plantation and seed-ball broadcasting on open land.", link="p-agriculture-development.html", link_label="Agriculture programme"),
+    dict(id="brucellosis-mundra", program=["animal"], type="project", short="Brucellosis · Mundra", title="Brucellosis vaccination in 11 villages", place="Villages of Mundra taluka", taluka="Mundra", lat=22.839, lon=69.725, approx=True, when="Since 2012",
+         text="With Adani Foundation's CSR programme and the National Dairy Development Board, dairy animals in 11 villages are vaccinated against brucellosis – more than 45,000 female animals so far.",
+         img="img/updates/bhaskar-brucellosis-vaccination.jpg", img_alt="Divya Bhaskar report on the brucellosis vaccination", link="u-brucellosis-vaccination-mundra.html", link_label="Read the news report"),
+    dict(id="lsc-kothara", program=["animal"], type="centre", short="Livestock centre", title="Livestock service centre, Kothara", place="Kothara", taluka="Abdasa", lat=23.130, lon=68.940,
+         text="One of the Trust's three livestock service centres, with Nani Khakhar and Ratanpar (Khadir)."),
+    dict(id="khadir-kendra", program=["animal", "centres"], type="centre", short="Khadir Vistar Vikas Kendra", title="Khadir Vistar Vikas Kendra", place="Ratanpar (Khadir)", taluka="Bhachau", lat=23.860, lon=70.364,
+         text="Field centre for the Khadir area in the Great Rann, with one of the Trust's three livestock service centres."),
+    dict(id="earthquake-2001", program=["rebuild"], type="event", short="Rebuilt village", title="Rebuilding after the earthquake", place="A village in Kutch (location to be confirmed)", taluka="", lat=23.17, lon=70.12, approx=True, when="From 26 January 2001", month=1,
+         text="Relief materials, a survey of damaged houses and temporary shelters came first; then, with Castrol India, 134 permanent houses, a primary school, community centre, drinking-water scheme, full sanitation and solar street lights.",
+         link="p-natural-disaster-management.html", link_label="Disaster management"),
+    dict(id="van-shala", program=["school"], type="project", short="Van Shala", title="Van Shala, Kalara Wandh", place="Kalara Wandh", taluka="Lakhpat", lat=23.66, lon=68.86, approx=True,
+         text="A forest school (Van Shala) that brings primary education to children at Kalara Wandh; the Trust works as its support agency.",
+         img="img/gal/edu-02.jpg", img_alt="Van Shala classroom", link="p-primary-education-for-unreached-community.html", link_label="Education programme"),
+    dict(id="agariya-shala", program=["school"], type="project", short="Agariya Shala", title="Agariya Shala, Kadol", place="Kadol", taluka="Bhachau", lat=23.473, lon=70.292,
+         text="A non-registered school for the children of Agariyas – the salt-pan workers of the Rann – at Kadol village.", link="p-primary-education-for-unreached-community.html", link_label="Education programme"),
+    dict(id="head-office", program=["centres"], type="centre", short="Head office", title="Administrative office, Bhuj", place="Bhanushali Nagar, Bhuj", taluka="Bhuj", lat=23.247, lon=69.668,
+         text="102, Kaushik Apartment, Bhanushali Nagar, Bhuj – Kutch, Gujarat 370001.", link="contact.html", link_label="Contact"),
+    dict(id="kothara-1989", program=["centres"], type="event", short="Where we began", title="Where the Trust began", place="Kothara", taluka="Abdasa", lat=23.130, lon=68.940, when="28 March 1989", month=3,
+         text="The Trust was registered on 28 March 1989 at village Kothara in Abdasa taluka, where its registered office still is.", link="about.html", link_label="About the Trust"),
+]
+X3D_TYPES = {"project": "Project", "event": "Event", "centre": "Centre"}
+
+
+def _check_x3d():
+    import os, re
+    ids, progs = set(), {d["id"] for d in X3D}
+    for it in X3D_ITEMS:
+        where = "X3D_ITEMS[%s]" % it.get("id")
+        assert re.fullmatch(r"[a-z0-9-]+", it["id"]) and it["id"] not in ids, where + ": id must be unique, lower-case letters, digits and -"
+        ids.add(it["id"])
+        assert it["program"] and all(p in progs for p in it["program"]), where + ": unknown program"
+        assert it["type"] in X3D_TYPES, where + ": type must be project, event or centre"
+        assert 22.6 < it["lat"] < 24.8 and 68.0 < it["lon"] < 71.3, where + ": lat/lon is outside Kutch"
+        assert 1 <= it.get("month", 1) <= 12, where + ": month must be 1–12"
+        if it.get("img"):
+            assert os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "new", it["img"])), where + ": image not found " + it["img"]
+
+X3D_SEASON = {"Winter": "#5b7fd1", "Summer": "#e09a2f", "Monsoon": "#3b97cf", "Post-monsoon": "#6a9f4f"}
+X3D_MONTHS = [
+    ("January", "Jan", "Winter", "Cool, clear days. The Rann is white salt, Rann Utsav tents stand at Dhordo and migratory birds winter in Banni."),
+    ("February", "Feb", "Winter", "Rabi crops ripen on irrigated farms and the village tanks slowly drop."),
+    ("March", "Mar", "Summer", "The heat builds, the rabi harvest comes in and the last winter visitors leave."),
+    ("April", "Apr", "Summer", "Hot, dry winds. Tanks run low and mango fruit sets in the orchards."),
+    ("May", "May", "Summer", "The hottest month. Many tanks are dry – the time to desilt them before the rains."),
+    ("June", "Jun", "Summer", "Kesar mangoes are picked, the first showers arrive and farmers get ready to sow."),
+    ("July", "Jul", "Monsoon", "The monsoon reaches Kutch: kharif sowing begins and the tanks start to fill."),
+    ("August", "Aug", "Monsoon", "The heart of the monsoon. The Rann floods and the land turns green."),
+    ("September", "Sep", "Monsoon", "The rains taper off; tanks and check dams are full."),
+    ("October", "Oct", "Post-monsoon", "Kharif harvest. The Rann still holds water and migratory birds begin to arrive."),
+    ("November", "Nov", "Winter", "The Rann dries to white salt, Rann Utsav begins at Dhordo and rabi crops are sown."),
+    ("December", "Dec", "Winter", "Cool and bright: the white Rann at its best, with cranes and flamingos in Banni and the Rann."),
+]
 
 X3D_CSS = """
 .x3d{--hh:67px;position:relative;height:calc(100svh - var(--hh));min-height:520px;overflow:hidden;background:linear-gradient(#b9d6ea,#f3e4c4 70%);isolation:isolate}
@@ -1129,102 +1248,150 @@ X3D_CSS = """
 .xlab.peak{color:#5a3d22}.xlab.peak:before{content:"▲";display:block;text-align:center;font-size:.7rem;margin-bottom:1px}
 .xlab.region{font:600 .78rem/1 Inter,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:rgba(70,62,44,.72);translate:-50% -50%;text-shadow:0 0 8px rgba(255,255,255,.7)}
 .xlab.water{font:italic 500 .92rem/1 Inter,sans-serif;letter-spacing:.06em;color:rgba(255,255,255,.88);translate:-50% -50%;text-shadow:0 1px 4px rgba(10,50,80,.45)}
-.xp-where{position:relative;display:flex;gap:8px;align-items:flex-start;margin:-4px 0 12px;font-size:.84rem;line-height:1.4;color:#4c584d}
-.xp-where:before{content:"";flex:none;width:9px;height:9px;margin-top:4px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c)}
 .xlegend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:.73rem;color:#4c584d}.xlegend span{display:inline-flex;align-items:center;gap:5px}
 .xlegend i{width:11px;height:11px;border-radius:3px;background:var(--s);border:1px solid rgba(0,0,0,.14)}.xlegend .bd i{width:16px;height:0;border:0;border-top:2px dashed #d4932f;border-radius:0}
 .xcred{margin-top:9px;font-size:.64rem;line-height:1.4;color:#6b766c}.xtitle.mini .xlegend{display:none}.xtitle.mini .xcred{margin-top:4px}
-.xf-where{font-size:.82rem!important;color:var(--ochre)!important}
 .xpin{position:absolute;left:0;top:0;pointer-events:auto;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:99px;border:1px solid rgba(255,255,255,.75);background:rgba(255,252,244,.74);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font:600 .8rem/1 Inter,sans-serif;color:var(--ink);white-space:nowrap;cursor:pointer;transform-origin:50% 100%;box-shadow:0 10px 24px -12px rgba(0,0,0,.45);transition:opacity .3s,background .3s,box-shadow .3s;will-change:transform}
+.xpin[hidden]{display:none}
 .xpin i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#fff;flex:none}.xpin svg{width:15px;height:15px}
-.xpin:after{content:"";position:absolute;left:50%;top:100%;width:2px;height:10px;margin-left:-1px;background:linear-gradient(rgba(255,255,255,.95),transparent)}
+.xpin em{font-style:normal;min-width:20px;height:20px;padding:0 6px;margin:0 -5px 0 1px;border-radius:99px;background:color-mix(in srgb,var(--c) 16%,#fff);color:color-mix(in srgb,var(--c) 75%,#1d2a1f);font:700 .7rem/20px Inter,sans-serif;text-align:center}
+.xpin:after{content:"";position:absolute;left:50%;top:100%;width:2px;height:calc(10px + var(--lift,0px));margin-left:-1px;background:linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.25))}
 .xpin:hover,.xpin.on{background:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 35%,transparent),0 14px 30px -12px rgba(0,0,0,.5)}
+.xpin.xi{gap:6px;padding:4px 10px 4px 4px;font-size:.74rem}.xpin.xi i{width:22px;height:22px}.xpin.xi svg{width:12px;height:12px}
+.xpin.crowd{gap:0;padding:4px}.xpin.crowd span,.xpin.crowd em{display:none}
+.xpin.pop{animation:xpop .6s cubic-bezier(.2,.8,.2,1.35) var(--d,0s) both}@keyframes xpop{from{opacity:0;scale:.3}}
 .xpin.off{opacity:0;pointer-events:none}
 .xpanel{position:absolute;right:22px;top:22px;z-index:7;width:min(380px,calc(100% - 44px));perspective:1100px;opacity:0;transform:translateX(26px) scale(.97);pointer-events:none;transition:opacity .45s,transform .6s cubic-bezier(.2,.8,.2,1)}
 .xpanel.open{opacity:1;transform:none;pointer-events:auto}
-.xp-in{position:relative;overflow:hidden;border-radius:30px;padding:22px 24px 20px;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s ease-out}
+.xp-in{position:relative;overflow:hidden auto;max-height:calc(100svh - var(--hh) - 158px);border-radius:30px;padding:20px 24px;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s ease-out;scrollbar-width:thin}
 .xp-in:before{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(color-mix(in srgb,var(--c) 40%,transparent),transparent 70%);pointer-events:none}
-.xpanel.swap .xp-in>*{animation:xswap .55s cubic-bezier(.2,.8,.2,1) both}.xpanel.swap .xp-in>:nth-child(2){animation-delay:.05s}.xpanel.swap .xp-in>:nth-child(3){animation-delay:.1s}.xpanel.swap .xp-in>:nth-child(4){animation-delay:.15s}.xpanel.swap .xp-in>:nth-child(5){animation-delay:.2s}.xpanel.swap .xp-in>:nth-child(6){animation-delay:.25s}
+.xpanel.swap .xp-body>*{animation:xswap .55s cubic-bezier(.2,.8,.2,1) both}.xpanel.swap .xp-body>:nth-child(2){animation-delay:.05s}.xpanel.swap .xp-body>:nth-child(3){animation-delay:.1s}.xpanel.swap .xp-body>:nth-child(4){animation-delay:.15s}.xpanel.swap .xp-body>:nth-child(5){animation-delay:.2s}.xpanel.swap .xp-body>:nth-child(n+6){animation-delay:.25s}
 @keyframes xswap{from{opacity:0;transform:translateY(10px)}}
-.xp-top{position:relative;display:flex;align-items:center;gap:10px}
+.xp-top{position:relative;display:flex;align-items:center;gap:10px;min-height:32px}
 .xp-kick{font-weight:700;font-size:.74rem;letter-spacing:.13em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 70%,#1d2a1f)}
+.xp-back{display:none;align-items:center;gap:6px;max-width:62%;border:0;background:rgba(255,255,255,.65);border-radius:99px;padding:7px 13px 7px 9px;font:600 .8rem Inter,sans-serif;color:color-mix(in srgb,var(--c) 70%,#1d2a1f);cursor:pointer}
+.xp-back span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.xp-back svg{width:15px;height:15px;flex:none}.xp-back:hover{background:#fff}
+.xpanel.item .xp-back{display:inline-flex}.xpanel.item .xp-kick{display:none}
 .xp-count{margin-left:auto;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.xp-x{width:32px;height:32px;border-radius:50%;border:0;background:rgba(0,0,0,.07);font-size:1.3rem;line-height:1;cursor:pointer;color:var(--ink)}.xp-x:hover{background:rgba(0,0,0,.13)}
-.xp-title{position:relative;font:700 1.65rem/1.15 Fraunces,serif;margin:10px 0 12px;color:var(--ink)}
+.xp-x{flex:none;width:32px;height:32px;border-radius:50%;border:0;background:rgba(0,0,0,.07);font-size:1.3rem;line-height:1;cursor:pointer;color:var(--ink)}.xp-x:hover{background:rgba(0,0,0,.13)}
+.xp-title{position:relative;font:700 1.6rem/1.15 Fraunces,serif;margin:10px 0 12px;color:var(--ink)}
+.xp-where{position:relative;display:flex;gap:8px;align-items:flex-start;margin:-4px 0 12px;font-size:.84rem;line-height:1.4;color:#4c584d}
+.xp-where:before{content:"";flex:none;width:9px;height:9px;margin-top:4px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c)}
+.xp-where em{font-style:normal;font-size:.72rem;padding:1px 8px;border-radius:99px;background:rgba(0,0,0,.06);white-space:nowrap}
 .xp-stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85)}
 .xp-stat b{font:700 2rem/1 Fraunces,serif;color:color-mix(in srgb,var(--c) 75%,#1d2a1f)}.xp-stat span{flex:1;min-width:140px;font-size:.86rem;color:#4c584d}
-.xp-text{font-size:.93rem;line-height:1.55;color:#3d4a3f;margin:14px 0}
+.xp-text{font-size:.92rem;line-height:1.55;color:#3d4a3f;margin:14px 0}
 .xp-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}.xp-facts div{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.75)}
 .xp-facts b{display:block;font:700 1.1rem/1.2 Fraunces,serif;color:var(--ink)}.xp-facts span{display:block;font-size:.78rem;line-height:1.35;color:#5d6a5e}
+.xp-list{margin:0 0 14px}
+.xp-list h3{display:flex;align-items:center;gap:8px;margin:0 0 8px;font:700 .72rem/1 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4c584d}
+.xp-list h3 b{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--c);color:#fff;font-size:.7rem;line-height:20px;text-align:center;letter-spacing:0}
+.xp-list ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.xp-list button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:1px solid rgba(255,255,255,.8);border-radius:14px;background:rgba(255,255,255,.45);font:inherit;text-align:left;color:var(--ink);cursor:pointer;transition:background .2s,transform .2s}
+.xp-list button:hover{background:#fff;transform:translateX(2px)}
+.xp-list i,.xp-type i{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--c);color:#fff}.xp-list svg,.xp-type svg{width:14px;height:14px}
+.xp-list b{display:block;font-size:.86rem;line-height:1.25}.xp-list small{display:block;margin-top:2px;font-size:.75rem;line-height:1.3;color:#5d6a5e}
+.xp-list .none{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.4);font-size:.84rem;color:#5d6a5e}
+.xp-type{display:flex;align-items:center;gap:9px;margin-top:8px;font:700 .72rem/1.2 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 70%,#1d2a1f)}
+.xp-type span{font-weight:600;letter-spacing:.02em;text-transform:none;color:#5d6a5e;font-size:.8rem}
+.xp-img{margin:0 0 4px;border-radius:18px;overflow:hidden;aspect-ratio:16/9;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.8)}.xp-img img{display:block;width:100%;height:100%;object-fit:cover}
+.xp-month{display:inline-flex;align-items:center;gap:8px;margin:-4px 0 14px;padding:7px 13px;border:1px solid rgba(0,0,0,.1);border-radius:99px;background:rgba(255,255,255,.6);font:600 .8rem Inter,sans-serif;color:var(--ink);cursor:pointer}.xp-month:hover{background:#fff}.xp-month svg{width:15px;height:15px;color:var(--k)}
 .xp-act{display:flex;gap:8px;align-items:center}
 .xp-go{flex:1;text-align:center;background:var(--green);color:#fff;font-weight:600;padding:11px 16px;border-radius:99px;font-size:.9rem}.xp-go:hover{background:#244a30}
 .xp-prev,.xp-next{border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.6);border-radius:99px;padding:10px 14px;font:600 .88rem Inter,sans-serif;cursor:pointer;color:var(--ink)}.xp-prev:hover,.xp-next:hover{background:#fff}
 .xdock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:7;width:max-content;display:flex;align-items:center;gap:4px;padding:7px;border-radius:26px;max-width:calc(100% - 24px)}
 .xd-places{display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none}.xd-places::-webkit-scrollbar{display:none}
-.xd-places button{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:76px;padding:8px 4px 7px;border:0;border-radius:18px;background:transparent;font:600 .7rem/1.15 Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
+.xd-places button{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:76px;padding:8px 4px 7px;border:0;border-radius:18px;background:transparent;font:600 .7rem/1.15 Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
 .xd-places button i{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--c);color:#fff;box-shadow:0 6px 14px -6px var(--c);transition:transform .3s cubic-bezier(.2,.8,.2,1.4)}.xd-places svg{width:18px;height:18px}
+.xd-places em{position:absolute;top:4px;left:calc(50% + 9px);min-width:17px;height:17px;padding:0 4px;border-radius:99px;background:#fff;color:var(--ink);font:700 .62rem/17px Inter,sans-serif;font-style:normal;text-align:center;box-shadow:0 0 0 1.5px var(--c)}
 .xd-places button:hover{background:rgba(255,255,255,.55)}.xd-places button:hover i{transform:translateY(-3px) scale(1.06)}.xd-places button.on{background:#fff;box-shadow:0 6px 16px -10px rgba(0,0,0,.4)}
 .xd-sep{flex:none;width:1px;align-self:stretch;margin:8px 4px;background:rgba(29,42,31,.15)}
 .xd-tour,.xd-reset{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;border:0;border-radius:18px;background:rgba(255,255,255,.5);font:600 .82rem Inter,sans-serif;color:var(--ink);cursor:pointer;transition:background .25s}
 .xd-tour:hover,.xd-reset:hover{background:#fff}.xd-tour svg,.xd-reset svg{width:16px;height:16px}
-.xd-seasons{flex:none;position:relative;display:grid;grid-template-columns:repeat(3,1fr);height:48px;padding:4px;border-radius:18px;background:rgba(255,255,255,.45)}
-.xs-glide{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 3);border-radius:14px;background:#fff;box-shadow:0 4px 12px -6px rgba(0,0,0,.35);transform:translateX(calc(var(--i) * 100%));transition:transform .45s cubic-bezier(.2,.8,.2,1.15)}
-.xd-seasons button{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 11px;border:0;background:none;border-radius:14px;font:600 .8rem Inter,sans-serif;color:#4c584d;cursor:pointer;transition:color .3s}
-.xd-seasons button svg{width:16px;height:16px;flex:none;transition:transform .4s cubic-bezier(.2,.8,.2,1.4)}.xd-seasons button[aria-checked=true]{color:var(--ink)}.xd-seasons button[aria-checked=true] svg{color:var(--k);transform:scale(1.15)}
-.xd-seasons button:hover svg{transform:rotate(-12deg) scale(1.1)}
 .xd-tour[aria-pressed=true]{background:var(--green);color:#fff}
-.xtoast{position:absolute;left:50%;top:22px;z-index:8;transform:translate(-50%,-14px);opacity:0;padding:10px 18px;border-radius:99px;font-weight:600;font-size:.88rem;color:var(--ink);pointer-events:none;transition:opacity .4s,transform .5s cubic-bezier(.2,.8,.2,1);max-width:min(560px,calc(100% - 40px));text-align:center}
-.xtoast.show{opacity:1;transform:translate(-50%,0)}
+.xmonths{position:absolute;left:22px;bottom:104px;z-index:6;width:102px;padding:8px;border-radius:22px;transition:opacity .35s}
+.xm-head{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:4px;padding:2px 2px 8px 8px}
+.xm-lab{font:700 .6rem/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#6b766c}
+.xm-season{grid-column:1/-1;margin-top:3px;font:700 .82rem/1.15 Inter,sans-serif;color:color-mix(in srgb,var(--k) 72%,#1d2a1f);transition:color .4s}
+.xm-play{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.7);display:grid;place-items:center;color:var(--ink);cursor:pointer}.xm-play:hover{background:#fff}.xm-play svg{width:13px;height:13px}
+.xm-play[aria-pressed=true]{background:var(--green);color:#fff}
+.xm-list{position:relative;display:flex;flex-direction:column}
+.xm-glide{position:absolute;left:0;right:0;top:0;height:calc(100% / 12);border-radius:12px;background:#fff;box-shadow:0 4px 12px -6px rgba(0,0,0,.35);transform:translateY(calc(var(--i) * 100%));transition:transform .45s cubic-bezier(.2,.8,.2,1.15)}
+.xm-list button{position:relative;display:flex;align-items:center;gap:9px;height:29px;padding:0 10px;border:0;border-radius:12px;background:none;font:600 .8rem Inter,sans-serif;color:#4c584d;cursor:pointer;transition:color .25s}
+.xm-list button:before{content:"";flex:none;width:4px;height:13px;border-radius:2px;background:var(--k);opacity:.5;transition:height .3s,opacity .3s}
+.xm-list button:hover{color:var(--ink)}.xm-list button[aria-checked=true]{color:var(--ink)}.xm-list button[aria-checked=true]:before{opacity:1;height:17px}
+.xm-list button:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+.xtoast{position:absolute;left:50%;top:22px;z-index:8;transform:translate(-50%,-14px);opacity:0;padding:10px 18px;border-radius:22px;font-weight:600;font-size:.88rem;line-height:1.4;color:var(--ink);pointer-events:none;transition:opacity .4s,transform .5s cubic-bezier(.2,.8,.2,1);max-width:min(560px,calc(100% - 40px));text-align:center}
+.xtoast.show{opacity:1;transform:translate(-50%,0)}.xtoast b{color:color-mix(in srgb,var(--k,#2e5b3b) 75%,#1d2a1f)}
 .xload{position:absolute;inset:0;z-index:9;display:grid;place-content:center;justify-items:center;gap:14px;background:linear-gradient(#b9d6ea,#f3e4c4 70%);color:var(--green);font-weight:600;transition:opacity .9s,visibility 0s .9s}
 .x3d.ready .xload{opacity:0;visibility:hidden}.xl-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(46,91,59,.2);border-top-color:var(--green);animation:spin 1s linear infinite}
 .xfall{display:none}
 .x3d.nogl{height:auto;min-height:0;background:var(--sand2)}.x3d.nogl>:not(.xfall){display:none!important}
-.x3d.nogl .xfall{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:44px 20px 64px}
+.x3d.nogl .xfall{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:44px 20px 64px}
 .xf-head{grid-column:1/-1}.xf-head h1{font:700 2.2rem/1.1 Fraunces,serif;margin:.2em 0}.xf-head p{color:var(--muted)}
 .xf-card{display:block;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:18px;padding:18px 20px;color:var(--ink)}
 .xf-card h3{font:700 1.2rem/1.2 Fraunces,serif;margin:.3em 0}.xf-card p{font-size:.92rem;color:var(--muted);margin:.4em 0}.xf-card b{color:var(--green)}
+.xf-where{font-size:.82rem!important;color:var(--ochre)!important}
+.xf-items{margin:.6em 0 .8em;padding-left:1.1em;font-size:.86rem;color:var(--muted)}.xf-items li{margin:.25em 0}.xf-items b{color:var(--ink)}
+@media(max-height:800px) and (min-width:761px){.xmonths{bottom:96px}.xm-list button{height:25px;font-size:.76rem}.xtitle:not(.mini) .xlegend{display:none}}
 @media(max-width:760px){
 .xtitle{left:12px;top:12px;right:12px;max-width:none;padding:12px 16px;border-radius:20px}.xlegend{display:none}.xcred{font-size:.6rem}.xlab.region,.xlab.water{font-size:.66rem}.xtitle h1{font-size:1.3rem;margin:.1em 0 0}.xtitle p{display:none}
 .xpanel{left:12px;right:12px;top:auto;bottom:100px;width:auto;transform:translateY(24px)}.xpanel.open{transform:none}
-.xp-in{padding:16px 18px;border-radius:24px;max-height:calc(100svh - var(--hh) - 210px);overflow:auto}
+.xp-in{padding:16px 18px;border-radius:24px;max-height:calc((100svh - var(--hh)) * .48)}.xpanel:not(.item) :is(.xp-stat,.xp-text,.xp-facts){display:none}.xp-img{aspect-ratio:2/1}.xtitle{transition:opacity .35s}.x3d.pan .xtitle{opacity:0;pointer-events:none}
 .xp-title{font-size:1.3rem;margin:6px 0 8px}.xp-stat b{font-size:1.5rem}.xp-text{font-size:.86rem;margin:10px 0}.xp-facts{margin-bottom:12px}
-.xpin span{display:none}.xpin{padding:4px}.xpin.on span{display:inline}.xpin.on{padding-right:10px}
+.xpin span,.xpin em{display:none}.xpin,.xpin.xi{gap:0;padding:4px}.xpin.on span{display:inline}.xpin.on{gap:6px;padding-right:10px}
 .xdock{left:10px;right:10px;bottom:10px;transform:none;max-width:none;width:auto}.xd-places{flex:1}
-.xd-places button{width:62px;font-size:.64rem}.xd-seasons button span,.xd-tour span{display:none}.xd-seasons button{padding:0 9px}.xd-tour,.xd-reset{padding:0 10px}
+.xd-places button{width:62px;font-size:.64rem}.xd-places em{left:calc(50% + 7px)}.xd-tour span{display:none}.xd-tour,.xd-reset{padding:0 10px}
+.xmonths{left:auto;right:8px;bottom:auto;top:50%;transform:translateY(-42%);width:auto;padding:5px;border-radius:18px}
+.xm-head{display:flex;justify-content:center;padding:1px 0 5px}.xm-lab,.xm-season{display:none}.xm-play{width:28px;height:28px}
+.xm-list button{height:25px;gap:5px;padding:0 8px 0 6px;font-size:.68rem}.xm-list button:before{width:3px;height:10px}.xm-list button[aria-checked=true]:before{height:13px}
+.x3d.pan .xmonths{opacity:0;pointer-events:none}
 .xtoast{top:auto;bottom:100px}
 }
-@media(prefers-reduced-motion:reduce){.xpanel,.xp-in,.xtoast{transition:none}.xl-ring{animation:none}}
+@media(prefers-reduced-motion:reduce){.xpanel,.xp-in,.xtoast,.xm-glide{transition:none}.xl-ring{animation:none}.xpin.pop{animation:none}}
 """
 
 
 def explore_body():
     import json
-    places = "".join('<button type="button" style="--c:%s" aria-current="false"><i>%s</i><span>%s</span></button>' % (d["color"], X3D_SVG(d["icon"]), E(d["short"])) for d in X3D)
-    data = json.dumps([dict(d, svg=X3D_SVG(d["icon"])) for d in X3D], ensure_ascii=False).replace("</", "<\\/")
-    fall = "".join('<a class="xf-card" style="--c:%s" href="%s"><div class="kick">%s</div><h3>%s</h3><p class="xf-where">%s</p><p><b>%s</b> %s</p><p>%s</p><span class="more">%s →</span></a>'
-                   % (d["color"], d["link"], E(d["kick"]), E(d["title"]), E(d["where"]), E(d["stat"][0]), E(d["stat"][1]), E(d["text"]), E(d["link_label"])) for d in X3D)
+    _check_x3d()
+    n = {d["id"]: sum(d["id"] in it["program"] for it in X3D_ITEMS) for d in X3D}
+    places = "".join('<button type="button" style="--c:%s" aria-current="false" aria-label="%s – %d on the map"><i>%s</i><span>%s</span><em aria-hidden="true">%d</em></button>'
+                     % (d["color"], E(d["kick"]), n[d["id"]], X3D_SVG(d["icon"]), E(d["short"]), n[d["id"]]) for d in X3D)
+    data = dict(programs=[dict(d, svg=X3D_SVG(d["icon"]), n=n[d["id"]]) for d in X3D],
+                items=[dict(dict(approx=False, when="", month=0, taluka="", img="", img_alt="", link="", link_label=""), **it) for it in X3D_ITEMS],
+                types={k: dict(label=v, svg=X3D_SVG("t-" + k)) for k, v in X3D_TYPES.items()},
+                months=[dict(name=m, abbr=a, season=s, color=X3D_SEASON[s], text=t) for m, a, s, t in X3D_MONTHS])
+    data = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    def fitems(pid):
+        its = [it for it in X3D_ITEMS if pid in it["program"]]
+        return '<ul class="xf-items">%s</ul>' % "".join('<li><b>%s</b> – %s%s</li>' % (E(it["title"]), E(it["place"]), (", " + E(it["taluka"]) + " taluka") if it.get("taluka") and it["taluka"] not in it["place"] else "") for it in its) if its else ""
+    fall = "".join('<div class="xf-card" style="--c:%s"><div class="kick">%s</div><h3>%s</h3><p class="xf-where">%s</p><p><b>%s</b> %s</p><p>%s</p>%s<a class="more" href="%s">%s →</a></div>'
+                   % (d["color"], E(d["kick"]), E(d["title"]), E(d["where"]), E(d["stat"][0]), E(d["stat"][1]), E(d["text"]), fitems(d["id"]), d["link"], E(d["link_label"])) for d in X3D)
+    months = "".join('<button type="button" role="radio" aria-checked="false" tabindex="-1" style="--k:%s" aria-label="%s, %s"><span aria-hidden="true">%s</span></button>'
+                     % (X3D_SEASON[s], m, s.lower(), a) for m, a, s, t in X3D_MONTHS)
     reset = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v5h5"/></svg>'
     play = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>'
+    back = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>'
     return ('<div class="x3d" id="x3d">'
             '<div class="xlabels" aria-hidden="true"></div><div class="xpins" aria-hidden="true"></div>'
-            '<div class="xtitle xg"><div class="kick">Explore in 3D</div><h1>Kutch, up close</h1><p>The real shape of Kutch, from satellite data. Drag to look around, scroll or pinch to zoom, and tap a pin to visit a program.</p>'
+            '<div class="xtitle xg"><div class="kick">Explore in 3D</div><h1>Kutch, up close</h1><p>The real shape of Kutch, from satellite data. Drag to look around and scroll or pinch to zoom. Pick a program to see its projects and events on the map, and a month to see the season.</p>'
             '<div class="xlegend"><span style="--s:#efece4"><i></i>Salt Rann</span><span style="--s:#cfae74"><i></i>Farmland</span><span style="--s:#a99a5e"><i></i>Scrub</span><span style="--s:#8fc2d6"><i></i>Wetland</span><span style="--s:#cbbfae"><i></i>Towns</span><span class="bd"><i></i>District boundary</span></div>'
-            '<div class="xcred">Terrain: NASA SRTM (AWS Terrain Tiles) · Land cover: ESA WorldCover 2021, CC BY 4.0 · Boundary © OpenStreetMap contributors · Heights ×32</div></div>'
+            '<div class="xcred">Terrain: NASA SRTM (AWS Terrain Tiles) · Land cover: ESA WorldCover 2021, CC BY 4.0 · Boundary and village positions © OpenStreetMap contributors · Heights ×32</div></div>'
             '<div class="xtoast xg" role="status"></div>'
-            '<aside class="xpanel" aria-hidden="true" aria-label="Program details"><div class="xp-in xg">'
-            '<div class="xp-top"><span class="xp-kick"></span><span class="xp-count"></span><button class="xp-x" type="button" aria-label="Close">×</button></div>'
-            '<h2 class="xp-title"></h2><p class="xp-where"></p><div class="xp-stat"><b></b><span></span></div><p class="xp-text"></p><div class="xp-facts"></div>'
-            '<div class="xp-act"><a class="xp-go" href="#"></a><button class="xp-prev" type="button" aria-label="Previous place">←</button><button class="xp-next" type="button">Next →</button></div>'
+            '<aside class="xpanel" aria-hidden="true" aria-label="Details"><div class="xp-in xg">'
+            '<div class="xp-top"><button class="xp-back" type="button">' + back + '<span></span></button><span class="xp-kick"></span><span class="xp-count"></span><button class="xp-x" type="button" aria-label="Close">×</button></div>'
+            '<div class="xp-body"></div>'
+            '<div class="xp-act"><a class="xp-go" href="#"></a><button class="xp-prev" type="button" aria-label="Previous">←</button><button class="xp-next" type="button">Next →</button></div>'
             '</div></aside>'
-            '<div class="xdock xg" role="toolbar" aria-label="Places and view controls"><div class="xd-places">' + places + '</div><span class="xd-sep"></span>'
-            '<div class="xd-seasons" role="radiogroup" aria-label="Season" style="--i:0"><span class="xs-glide"></span>'
-            '<button type="button" role="radio" aria-checked="true" title="Summer" style="--k:#e09a2f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Summer</span></button>'
-            '<button type="button" role="radio" aria-checked="false" title="Monsoon" style="--k:#3b97cf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 15a4 4 0 0 1 .6-8A5.5 5.5 0 0 1 18 8.5a3.5 3.5 0 0 1-.5 6.5H7zM8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg><span>Monsoon</span></button>'
-            '<button type="button" role="radio" aria-checked="false" title="Winter" style="--k:#5b7fd1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11M9.5 3.5 12 6l2.5-2.5M9.5 20.5 12 18l2.5 2.5"/></svg><span>Winter</span></button></div>'
+            '<div class="xmonths xg"><div class="xm-head"><span class="xm-lab">Month</span>'
+            '<button class="xm-play" type="button" aria-pressed="false" aria-label="Play the year, month by month" title="Play the year">' + play + '</button><b class="xm-season"></b></div>'
+            '<div class="xm-list" role="radiogroup" aria-label="Month shown on the map" style="--i:0"><span class="xm-glide"></span>' + months + '</div></div>'
+            '<div class="xdock xg" role="toolbar" aria-label="Programs and view controls"><div class="xd-places">' + places + '</div><span class="xd-sep"></span>'
             '<button class="xd-tour" type="button" aria-pressed="false">' + play + '<span>Tour</span></button>'
-            '<button class="xd-reset" type="button" aria-label="Reset view" title="Reset view">' + reset + '</button></div>'
+            '<button class="xd-reset" type="button" aria-label="Show all programs" title="Show all programs">' + reset + '</button></div>'
             '<div class="xload"><div class="xl-ring"></div><span>Building Kutch…</span></div>'
-            '<div class="xfall"><div class="xf-head"><div class="kick">Explore</div><h1>Kutch, up close</h1><p>The 3D view needs WebGL 2, which this browser does not offer, so here are the same places as cards.</p></div>' + fall + '</div>'
+            '<div class="xfall"><div class="xf-head"><div class="kick">Explore</div><h1>Kutch, up close</h1><p>The 3D view needs WebGL 2, which this browser does not offer, so here are the same programs, projects and events as cards.</p></div>' + fall + '</div>'
             '</div>'
             '<script type="application/json" id="x3d-data">' + data + '</script>'
             '<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>'
@@ -1235,11 +1402,11 @@ def explore_body():
 
 
 X3D_TEASER = ('<section class="xteaser"><div class="wrap split"><div class="reveal"><div class="kick">New · Explore in 3D</div><h2>Step into Kutch</h2>'
-              '<p>Fly over the real shape of Kutch – built from satellite terrain and land-cover data – from the white salt Rann and Banni grassland to the Gulf coast, and visit each of our programs where the work happens. '
-              'Switch between summer, monsoon and winter: the Rann floods, then dries to white salt, and the tanks fill and run low.</p>'
-              '<div class="xt-tags"><span>Real terrain &amp; land cover</span><span>9 programs to visit</span><span>Summer · monsoon · winter</span></div>'
+              '<p>Fly over the real shape of Kutch – built from satellite terrain and land-cover data – from the white salt Rann and Banni grassland to the Gulf coast. '
+              'Pick a program to see its projects, events and centres where the work happens, and step through the year month by month: the Rann floods, then dries to white salt, and the tanks fill and run low.</p>'
+              '<div class="xt-tags"><span>Real terrain &amp; land cover</span><span>%d programs · %d places</span><span>Month by month</span></div>'
               '<a class="btn" href="explore.html">Explore in 3D →</a></div>'
-              '<div class="reveal"><a class="xt-img" href="explore.html"><img src="img/explore-poster.jpg" alt="3D view of Kutch built from real terrain data, with program pins" loading="lazy"></a></div></div></section>')
+              '<div class="reveal"><a class="xt-img" href="explore.html"><img src="img/explore-poster.jpg" alt="3D view of Kutch built from real terrain data, with program pins" loading="lazy"></a></div></div></section>') % (len(X3D), len(X3D_ITEMS))
 
 
 def hero_page(title, sub, img=None):
@@ -1331,7 +1498,7 @@ def build():
 
     # UPDATES
     W("updates.html", page("updates.html", "Latest updates", updates_page()))
-    W("explore.html", page("explore.html", "Explore Kutch in 3D", explore_body(), "Fly over a 3D Kutch and visit the Trust's programs – water, fodder, fruit, forest, animal health, education and rebuilding.", bare=True))
+    W("explore.html", page("explore.html", "Explore Kutch in 3D", explore_body(), "Fly over a 3D Kutch, pick one of the Trust's programs to see its projects and events on the map, and step through the seasons month by month.", bare=True))
     for i, u in enumerate(UPDATES):
         W(f"u-{u['slug']}.html", page(f"u-{u['slug']}.html", u["title"], update_page(i), u["summary"]))
 
